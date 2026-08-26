@@ -14,7 +14,7 @@ namespace DigitalArs.Domain.Entities
         public int ID_Account { get; set; }
         public Account Account { get; set; }
         public TransactionType Type { get; set; } //llamamos el enum transactiontype
-        //[Column(TypeName = "decimal(18,2")]
+        [Column(TypeName = "decimal(18,2")]
         public decimal Amount { get; set; }
         public DateTime Date_Transaction { get; set; } = DateTime.UtcNow;
         
