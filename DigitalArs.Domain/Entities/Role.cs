@@ -8,5 +8,8 @@ namespace DigitalArs.Domain.Entities
     {
         public int ID_Role { get; set; }
         public string Name { get; set; } = string.Empty; // Admin o User
+
+        // Relación 1:N con User
+        public ICollection<User> Users { get; set; } = new List<User>();
     }
 }

@@ -12,6 +12,12 @@ namespace DigitalArs.Domain.Entities
         public string Password_Hasheada { get; set; }
         public string DNI { get; set; }
         public string Alias { get; set; }
-        public string Roles { get; set; }
+        
+        //Relacion con Role
+        public int ID_Role { get; set; }
+        public Role Role { get; set; }
+
+        //Relacion 1:1 con Account
+        public Account Account { get; set; }
     }
 }
