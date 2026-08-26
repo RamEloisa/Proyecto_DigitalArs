@@ -21,5 +21,7 @@ namespace DigitalArs.Domain.Entities
         //MANEJO DE TRANSACCIONES
         //relaciones entre cuentas
 
+
+
     }
 }
