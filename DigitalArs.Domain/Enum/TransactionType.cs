@@ -12,7 +12,7 @@ namespace DigitalArs.Domain.Enum
     public enum TransactionType
     {
         Deposit,
-        Tramsfer_In,
+        Transfer_In,
         Transfer_Out
     }
 }
