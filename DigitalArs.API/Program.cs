@@ -3,6 +3,9 @@ using DigitalArs.Application; // AddApplication (servicios que usan IUnitOfWork)
 using DigitalArs.Infrastructure; // AddInfrastructure (DbContext + IUnitOfWork)
 using Swashbuckle.AspNetCore.SwaggerUI; // DocExpansion y opciones de la UI
 
+using DigitalArs.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers() // Descubre Controllers/ y los publica como endpoints
@@ -26,6 +29,11 @@ builder.Services.AddOpenApi(options => // Genera /openapi/v1.json (lo que consum
 
 builder.Services.AddApplication(); // IRoleService, IUserService, etc. → IUnitOfWork
 builder.Services.AddInfrastructure(builder.Configuration); // DbContext + IUnitOfWork Scoped
+
+builder.Services.AddDbContext<DigitalArsDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
 
 var app = builder.Build();
 
