@@ -1,4 +1,5 @@
 <Solution>
+  <Folder Name="/db/" />
   <Project Path="DigitalArs.API/DigitalArs.API.csproj" />
   <Project Path="DigitalArs.Application/DigitalArs.Application.csproj" />
   <Project Path="DigitalArs.Domain/DigitalArs.Domain.csproj" />
