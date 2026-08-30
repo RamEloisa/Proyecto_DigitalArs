@@ -25,6 +25,14 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
                 .WithOne(u => u.Role)
                 .HasForeignKey(u => u.ID_Role)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //SEED
+            //ID ADMIN Y USER
+            builder.HasData(
+                new Role { ID_Role = 1, Name = "Admin" },
+                new Role { ID_Role = 2, Name = "User"}
+
+                );
         }
     }
 }

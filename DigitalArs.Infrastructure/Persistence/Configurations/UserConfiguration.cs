@@ -47,6 +47,43 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
                 .WithOne(a => a.User)
                 .HasForeignKey<Account>(a => a.ID_User)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //SEED USER
+            builder.HasData(
+                new User
+                {
+                    ID_User = 1,
+                    Full_Name = "Admin Principal",
+                    Email = "admin@digitalars.com",
+                    //Admin123! en bcrypt
+                    Password_Hasheada = "$2a$12$czX6t8AeyKgsBuM9F8DPo.J7an5VhqpJz34adBxZQjUEP5QhGC3QG",
+                    DNI = "30111222",
+                    Alias = "admin.digitalars",
+                    ID_Role = 1 //Admin
+                },
+                new User
+                {
+                    ID_User = 2,
+                    Full_Name = "Juan Perez",
+                    Email = "juan.perez@digitalars.com",
+                    //User123! en bcrypt
+                    Password_Hasheada = "$2a$12$PN0hzgjrxIA789l5jXC2Euvfv.yNMYITgKuDuEwg9qs.Z7tpvY8qy",
+                    DNI = "35222333",
+                    Alias = "juan.perez",
+                    ID_Role = 2 //User
+                },
+                new User
+                {
+                    ID_User = 3,
+                    Full_Name = "Maria Gomez",
+                    Email = "maria.gomez@digitalars.com",
+                    //User123! en bcrypt
+                    Password_Hasheada = "$2a$12$PN0hzgjrxIA789l5jXC2Euvfv.yNMYITgKuDuEwg9qs.Z7tpvY8qy",
+                    DNI = "36333444",
+                    Alias = "maria.gomez",
+                    ID_Role = 2 //User
+                }
+            );
         }
     }
 }
