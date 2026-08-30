@@ -1,8 +1,5 @@
 <Solution>
   <Folder Name="/db/" />
-  <Folder Name="/Elementos de la solución/">
-    <File Path="../../../Downloads/README.md" />
-  </Folder>
   <Project Path="DigitalArs.API/DigitalArs.API.csproj" />
   <Project Path="DigitalArs.Application/DigitalArs.Application.csproj" />
   <Project Path="DigitalArs.Domain/DigitalArs.Domain.csproj" />
