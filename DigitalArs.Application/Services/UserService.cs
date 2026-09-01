@@ -1,6 +1,7 @@
 using DigitalArs.Application.DTOs;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Interfaces;
+using MapsterMapper;
 
 namespace DigitalArs.Application.Services;
 
@@ -15,40 +16,33 @@ public interface IUserService
 
 public class UserService : IUserService
 {
-    private readonly IUnitOfWork _unitOfWork; // Nunca DigitalArsDbContext
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public UserService(IUnitOfWork unitOfWork)
+    public UserService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<UserDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var users = await _unitOfWork.Repository<User>().GetAllAsync(cancellationToken);
-        return users.Select(ToDto).ToList();
+        return _mapper.Map<IReadOnlyList<User>, List<UserDto>>(users);
     }
 
     public async Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(id, cancellationToken);
-        return user is null ? null : ToDto(user);
+        return user is null ? null : _mapper.Map<User, UserDto>(user);
     }
 
     public async Task<UserDto> CreateAsync(CreateUserDto dto, CancellationToken cancellationToken = default)
     {
-        var user = new User
-        {
-            Full_Name = dto.FullName,
-            Email = dto.Email,
-            Password_Hasheada = dto.Password, // TODO: reemplazar por hash (BCrypt/Identity)
-            DNI = dto.Dni,
-            Alias = dto.Alias,
-            ID_Role = dto.RoleId
-        };
-
+        var user = _mapper.Map<CreateUserDto, User>(dto);
         await _unitOfWork.Repository<User>().AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return ToDto(user);
+        return _mapper.Map<User, UserDto>(user);
     }
 
     public async Task<bool> UpdateAsync(int id, UpdateUserDto dto, CancellationToken cancellationToken = default)
@@ -56,12 +50,7 @@ public class UserService : IUserService
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(id, cancellationToken);
         if (user is null) return false;
 
-        user.Full_Name = dto.FullName;
-        user.Email = dto.Email;
-        user.DNI = dto.Dni;
-        user.Alias = dto.Alias;
-        user.ID_Role = dto.RoleId;
-
+        _mapper.Map<UpdateUserDto, User>(dto, user);
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
@@ -76,7 +65,4 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
-
-    private static UserDto ToDto(User user) =>
-        new(user.ID_User, user.Full_Name, user.Email, user.DNI, user.Alias, user.ID_Role);
 }

@@ -1,9 +1,10 @@
 namespace DigitalArs.Application.DTOs;
 
-// Respuesta pública: nunca incluye Password_Hasheada
+/// Respuesta de usuario: nunca incluye Password_Hasheada.
 public record UserDto(int Id, string FullName, string Email, string Dni, string Alias, int RoleId);
 
-// Password se guarda en Password_Hasheada (el hash real viene después)
+/// Body de POST /api/users. Password se persiste como hash, no se devuelve.
 public record CreateUserDto(string FullName, string Email, string Password, string Dni, string Alias, int RoleId);
 
+/// Body de PUT /api/users/{id}. No permite cambiar la contraseña.
 public record UpdateUserDto(string FullName, string Email, string Dni, string Alias, int RoleId);

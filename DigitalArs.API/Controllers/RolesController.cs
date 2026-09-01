@@ -37,6 +37,7 @@ public class RolesController : ControllerBase
     [HttpPost]
     [EndpointSummary("Crea un rol (Admin, User, etc.)")]
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RoleDto>> Create([FromBody] CreateRoleDto dto, CancellationToken cancellationToken)
     {
         var created = await _roles.CreateAsync(dto, cancellationToken);
@@ -46,6 +47,7 @@ public class RolesController : ControllerBase
     [HttpPut("{id:int}")]
     [EndpointSummary("Actualiza el nombre de un rol")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateRoleDto dto, CancellationToken cancellationToken)
     {

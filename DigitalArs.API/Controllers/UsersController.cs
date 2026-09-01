@@ -37,6 +37,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     [EndpointSummary("Registra un usuario")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto, CancellationToken cancellationToken)
     {
         var created = await _users.CreateAsync(dto, cancellationToken);
@@ -46,6 +47,7 @@ public class UsersController : ControllerBase
     [HttpPut("{id:int}")]
     [EndpointSummary("Actualiza datos de un usuario (no cambia la contraseña)")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto, CancellationToken cancellationToken)
     {

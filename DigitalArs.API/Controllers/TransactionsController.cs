@@ -37,6 +37,7 @@ public class TransactionsController : ControllerBase
     [HttpPost]
     [EndpointSummary("Registra un depósito o transferencia")]
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<TransactionDto>> Create([FromBody] CreateTransactionDto dto, CancellationToken cancellationToken)
     {
         var created = await _transactions.CreateAsync(dto, cancellationToken);
