@@ -5,6 +5,9 @@ using Swashbuckle.AspNetCore.SwaggerUI; // DocExpansion y opciones de la UI
 
 using DigitalArs.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +37,11 @@ builder.Services.AddDbContext<DigitalArsDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
     ));
+
+builder.Services.AddAuthentication(option =>
+    option.DefaultAuthenticateScheme() = JwtBearerDefaults.AuthenticationScheme,
+    option.DefaultChallenge
+)
 
 var app = builder.Build();
 
