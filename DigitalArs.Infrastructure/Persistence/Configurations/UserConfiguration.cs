@@ -4,6 +4,7 @@ using System.Text;
 using DigitalArs.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using DigitalArs.Infrastructure.Security;
 
 namespace DigitalArs.Infrastructure.Persistence.Configurations
 {
@@ -11,6 +12,8 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
+            var hasher = new BCryptPasswordHasher();
+
             builder.HasKey(u => u.ID_User); //ID_user es la primary key
 
             builder.Property(u => u.Full_Name)
@@ -56,7 +59,7 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
                     Full_Name = "Admin Principal",
                     Email = "admin@digitalars.com",
                     //Admin123! en bcrypt
-                    Password_Hasheada = "$2a$12$czX6t8AeyKgsBuM9F8DPo.J7an5VhqpJz34adBxZQjUEP5QhGC3QG",
+                    Password_Hasheada = "$2a$11$Lcc/.JSUqr0pWtLG9/SIwe0R3J7uk.QwAiJ0i4Vws3odRsPRa28uy",
                     DNI = "30111222",
                     Alias = "admin.digitalars",
                     ID_Role = 1 //Admin
@@ -67,7 +70,7 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
                     Full_Name = "Juan Perez",
                     Email = "juan.perez@digitalars.com",
                     //User123! en bcrypt
-                    Password_Hasheada = "$2a$12$PN0hzgjrxIA789l5jXC2Euvfv.yNMYITgKuDuEwg9qs.Z7tpvY8qy",
+                    Password_Hasheada = "$2a$11$4/qtspjvQA4wq8df1/6oq..O.REndayYq/MGD5W8I0uQOtpO21icW",
                     DNI = "35222333",
                     Alias = "juan.perez",
                     ID_Role = 2 //User
@@ -78,7 +81,7 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
                     Full_Name = "Maria Gomez",
                     Email = "maria.gomez@digitalars.com",
                     //User123! en bcrypt
-                    Password_Hasheada = "$2a$12$PN0hzgjrxIA789l5jXC2Euvfv.yNMYITgKuDuEwg9qs.Z7tpvY8qy",
+                    Password_Hasheada = "$2a$11$4/qtspjvQA4wq8df1/6oq..O.REndayYq/MGD5W8I0uQOtpO21icW",
                     DNI = "36333444",
                     Alias = "maria.gomez",
                     ID_Role = 2 //User

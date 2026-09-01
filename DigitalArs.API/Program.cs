@@ -5,6 +5,7 @@ using DigitalArs.Infrastructure;
 using DigitalArs.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using BCrypt.Net;
 
 //Authetication
 using DigitalArs.Application.Security;
@@ -14,6 +15,11 @@ using System.Text;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+string adminHash = BCrypt.Net.BCrypt.HashPassword("Admin123!");
+string userHash = BCrypt.Net.BCrypt.HashPassword("User123!");
+Console.WriteLine($"Admin123! -> {adminHash}");
+Console.WriteLine($"User123!  -> {userHash}");
 
 builder.Services.AddControllers(options =>
     {
@@ -73,7 +79,7 @@ builder.Services
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
 
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key) //key vacia
             ),
 
             ClockSkew = TimeSpan.Zero
