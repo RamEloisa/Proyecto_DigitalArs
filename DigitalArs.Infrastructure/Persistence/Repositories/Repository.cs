@@ -27,9 +27,19 @@ internal class Repository<T> : IRepository<T> where T : class
     }
 
     // Where(predicate) se traduce a SQL (WHERE ...); queda tracked por si después se hace Update
-    public async Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<T>> FindAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[] includes)
     {
-        return await _dbSet.Where(predicate).ToListAsync(cancellationToken); 
+        IQueryable<T> query = _dbSet.Where(predicate);
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     // AddAsync solo agrega al change tracker; no hace INSERT hasta SaveChangesAsync

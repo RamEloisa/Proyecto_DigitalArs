@@ -1,5 +1,7 @@
+using DigitalArs.Application.Security;
 using DigitalArs.Domain.Interfaces; 
-using DigitalArs.Infrastructure.Persistence; 
+using DigitalArs.Infrastructure.Persistence;
+using DigitalArs.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore; 
 using Microsoft.Extensions.Configuration; 
 using Microsoft.Extensions.DependencyInjection; 
@@ -20,6 +22,10 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>(); 
+
+        services.AddScoped<IJwtService, JwtService>();
+
+        services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 
         return services; 
     }

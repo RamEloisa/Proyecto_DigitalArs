@@ -12,6 +12,8 @@ namespace DigitalArs.Domain.Entities
         public string Password_Hasheada { get; set; }
         public string DNI { get; set; }
         public string Alias { get; set; }
+        //agregado por requerimiento de historia 10
+        public bool IsActive { get; set; } = true; 
         
         //Relacion con Role
         public int ID_Role { get; set; }

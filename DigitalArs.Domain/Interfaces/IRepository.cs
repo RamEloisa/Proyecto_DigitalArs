@@ -11,7 +11,12 @@ public interface IRepository<T> where T : class
     Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
 
     // Devuelve las entidades que cumplen el predicado (filtro LINQ → SQL WHERE)
-    Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
+    //permite incluir relaciones de navegación mediante Include.
+    Task<IReadOnlyList<T>> FindAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[] includes
+    );
 
     // Marca la entidad para insertarse (todavía no hay INSERT hasta SaveChangesAsync)
     Task AddAsync(T entity, CancellationToken cancellationToken = default);

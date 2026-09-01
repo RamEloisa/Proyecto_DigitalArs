@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 using DigitalArs.Application.Mapping;
 using DigitalArs.Application.Services;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
+=======
+using DigitalArs.Application.Services; // Contratos e implementaciones de Application
+using Microsoft.Extensions.DependencyInjection; // IServiceCollection.AddScoped
+using DigitalArs.Application.Security;
+>>>>>>> 9a6eacc93c41109c51c00bf4167e649005a98b31
 
 namespace DigitalArs.Application;
 
@@ -23,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<ITransactionService, TransactionService>();
-        return services;
+        services.AddScoped<IAuthService, AuthService>();
+        return services; // Permite encadenar AddInfrastructure en Program.cs
     }
 }
