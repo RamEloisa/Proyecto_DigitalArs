@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using DigitalArs.Application.DTOs.Auth;
 using DigitalArs.Application.Security;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace DigitalArs.API.Controllers;
 
@@ -18,6 +18,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<ActionResult<LoginResponseDto>> Login(
         [FromBody] LoginRequestDto request)
     {

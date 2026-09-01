@@ -1,12 +1,14 @@
 using DigitalArs.Application.DTOs;
 using DigitalArs.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DigitalArs.API.Controllers;
 
 [ApiController]
 [Route("api/transactions")]
 [Tags("Transactions")]
+[Authorize]
 public class TransactionsController : ControllerBase
 {
     private readonly ITransactionService _transactions;

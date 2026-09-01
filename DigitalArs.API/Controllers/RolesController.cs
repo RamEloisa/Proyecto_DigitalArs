@@ -1,12 +1,14 @@
 using DigitalArs.Application.DTOs; // Lo que Swagger serializa (no las entidades)
 using DigitalArs.Application.Services; // IRoleService usa IUnitOfWork por debajo
 using Microsoft.AspNetCore.Mvc; // ApiController, ActionResult, HTTP codes
+using Microsoft.AspNetCore.Authorization;
 
 namespace DigitalArs.API.Controllers;
 
 [ApiController] // Valida el body y arma respuestas de error automáticas
 [Route("api/roles")] // Prefijo de todas las acciones de este controller
 [Tags("Roles")] // Agrupa estos endpoints en Swagger
+[Authorize(Roles = "Admin")] //revisar
 public class RolesController : ControllerBase
 {
     private readonly IRoleService _roles; // Application, no DbContext
