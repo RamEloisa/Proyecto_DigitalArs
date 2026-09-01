@@ -1,5 +1,6 @@
 using DigitalArs.Application.Services; // Contratos e implementaciones de Application
 using Microsoft.Extensions.DependencyInjection; // IServiceCollection.AddScoped
+using DigitalArs.Application.Security;
 
 namespace DigitalArs.Application;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IAuthService, AuthService>();
         return services; // Permite encadenar AddInfrastructure en Program.cs
     }
 }

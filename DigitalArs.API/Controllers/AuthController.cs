@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using DigitalArs.Application.DTOs.Auth;
+using DigitalArs.Application.Security;
+
 
 namespace DigitalArs.API.Controllers;
 
@@ -19,9 +18,21 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequestDto request)
+    public async Task<ActionResult<LoginResponseDto>> Login(
+        [FromBody] LoginRequestDto request)
     {
-        var response = await _authService.LoginAsync(request);
-        return Ok(response);    
+        try
+        {
+            var response = await _authService.LoginAsync(request);
+
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new
+            {
+                message = "Credenciales inválidas."
+            });
+        }
     }
 }
