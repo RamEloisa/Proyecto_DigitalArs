@@ -37,6 +37,7 @@ public class AccountsController : ControllerBase
     [HttpPost]
     [EndpointSummary("Crea una cuenta (1:1 con un usuario)")]
     [ProducesResponseType(typeof(AccountDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AccountDto>> Create([FromBody] CreateAccountDto dto, CancellationToken cancellationToken)
     {
         var created = await _accounts.CreateAsync(dto, cancellationToken);
@@ -46,6 +47,7 @@ public class AccountsController : ControllerBase
     [HttpPut("{id:int}")]
     [EndpointSummary("Actualiza nombre y saldo de una cuenta")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateAccountDto dto, CancellationToken cancellationToken)
     {

@@ -1,20 +1,28 @@
-using DigitalArs.Application.Services; // Contratos e implementaciones de Application
-using Microsoft.Extensions.DependencyInjection; // IServiceCollection.AddScoped
+using DigitalArs.Application.Mapping;
+using DigitalArs.Application.Services;
+using FluentValidation;
+using Mapster;
+using MapsterMapper;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DigitalArs.Application;
 
-/// <summary>
-/// Registra servicios de aplicación. Todos dependen de IUnitOfWork, nunca del DbContext.
-/// </summary>
+/// Registra servicios de aplicación, validadores y el mapeo centralizado (Mapster).
 public static class DependencyInjection
 {
-    // Lo llama Program.cs: builder.Services.AddApplication();
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IRoleService, RoleService>(); // Un servicio por request (Scoped)
+        var mappingConfig = TypeAdapterConfig.GlobalSettings;
+        mappingConfig.Scan(typeof(MappingConfig).Assembly);
+        services.AddSingleton(mappingConfig);
+        services.AddScoped<IMapper, Mapper>();
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
+        services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<ITransactionService, TransactionService>();
-        return services; // Permite encadenar AddInfrastructure en Program.cs
+        return services;
     }
 }

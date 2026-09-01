@@ -1,24 +1,32 @@
-using System.Text.Json.Serialization; // JsonStringEnumConverter: enums como texto en Swagger
-using DigitalArs.Application; // AddApplication (servicios que usan IUnitOfWork)
-using DigitalArs.Infrastructure; // AddInfrastructure (DbContext + IUnitOfWork)
-using Swashbuckle.AspNetCore.SwaggerUI; // DocExpansion y opciones de la UI
-
+using System.Text.Json.Serialization;
+using DigitalArs.API.Filters;
+using DigitalArs.Application;
+using DigitalArs.Infrastructure;
 using DigitalArs.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers() // Descubre Controllers/ y los publica como endpoints
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<FluentValidationActionFilter>();
+    })
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); // Type: "Deposit" en vez de 0
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+            ValidationErrorResponseFactory.FromModelState(context.ModelState);
     });
 
-builder.Services.AddOpenApi(options => // Genera /openapi/v1.json (lo que consume Swagger UI)
+builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        document.Info.Title = "DigitalArs API"; // Título de la UI
+        document.Info.Title = "DigitalArs API";
         document.Info.Version = "v1";
         document.Info.Description =
             "Billetera digital: roles, usuarios, cuentas y transacciones. " +
@@ -27,8 +35,8 @@ builder.Services.AddOpenApi(options => // Genera /openapi/v1.json (lo que consum
     });
 });
 
-builder.Services.AddApplication(); // IRoleService, IUserService, etc. → IUnitOfWork
-builder.Services.AddInfrastructure(builder.Configuration); // DbContext + IUnitOfWork Scoped
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddDbContext<DigitalArsDbContext>(options =>
     options.UseSqlServer(
@@ -39,19 +47,19 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); // Expone GET /openapi/v1.json
+    app.MapOpenApi();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "DigitalArs API v1"); // Spec que pinta la UI
-        options.DocumentTitle = "DigitalArs API"; // Título de la pestaña del browser
-        options.RoutePrefix = "swagger"; // UI en /swagger
-        options.EnableTryItOutByDefault(); // Try it out abierto
-        options.DisplayRequestDuration(); // Muestra ms de cada request
-        options.DocExpansion(DocExpansion.List); // Tags abiertos, operaciones cerradas
+        options.SwaggerEndpoint("/openapi/v1.json", "DigitalArs API v1");
+        options.DocumentTitle = "DigitalArs API";
+        options.RoutePrefix = "swagger";
+        options.EnableTryItOutByDefault();
+        options.DisplayRequestDuration();
+        options.DocExpansion(DocExpansion.List);
     });
 }
 
 app.UseHttpsRedirection();
-app.MapControllers(); // Enlaza Roles/Users/Accounts/Transactions
+app.MapControllers();
 
 app.Run();
