@@ -4,6 +4,7 @@ using DigitalArs.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DigitalArs.Infrastructure.Migrations
 {
     [DbContext(typeof(DigitalArsDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260830014518_SeedInitialData")]
+    partial class SeedInitialData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,32 +143,6 @@ namespace DigitalArs.Infrastructure.Migrations
                     b.HasIndex("ID_Account");
 
                     b.ToTable("Transactions");
-
-                    b.HasData(
-                        new
-                        {
-                            ID_Transaction = 1,
-                            Amount = 2000m,
-                            Date_Transaction = new DateTime(2026, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ID_Account = 2,
-                            Type = 0
-                        },
-                        new
-                        {
-                            ID_Transaction = 2,
-                            Amount = 1500m,
-                            Date_Transaction = new DateTime(2026, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ID_Account = 1,
-                            Type = 2
-                        },
-                        new
-                        {
-                            ID_Transaction = 3,
-                            Amount = 1500m,
-                            Date_Transaction = new DateTime(2026, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ID_Account = 3,
-                            Type = 1
-                        });
                 });
 
             modelBuilder.Entity("DigitalArs.Domain.Entities.User", b =>

@@ -35,6 +35,14 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
                 .WithOne(t => t.Account)
                 .HasForeignKey(t => t.ID_Account)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //SEED CUENTAS
+            builder.HasData(
+                //SUFIJO m o M para indicar q es decimal en precio
+                new Account { ID_Account = 1, ID_User = 1, Name = "Cuenta Admin", Price = 10000m, Date = new DateTime(2026, 1, 1) },
+                new Account { ID_Account = 2, ID_User = 2, Name = "Cuenta Juan", Price = 5000m, Date = new DateTime(2026, 1, 1) },
+                new Account { ID_Account = 3, ID_User = 3, Name = "Cuenta Maria", Price = 7500m, Date = new DateTime(2026, 1, 1) }
+            );
         }
     }
 }
