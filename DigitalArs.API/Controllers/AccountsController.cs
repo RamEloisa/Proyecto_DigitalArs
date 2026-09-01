@@ -1,12 +1,14 @@
 using DigitalArs.Application.DTOs;
 using DigitalArs.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization; //para autorizar la ruta
 
 namespace DigitalArs.API.Controllers;
 
 [ApiController]
 [Route("api/accounts")]
 [Tags("Accounts")]
+[Authorize]
 public class AccountsController : ControllerBase
 {
     private readonly IAccountService _accounts;
