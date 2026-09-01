@@ -1,15 +1,10 @@
-<<<<<<< HEAD
 using DigitalArs.Application.Mapping;
+using DigitalArs.Application.Security;
 using DigitalArs.Application.Services;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
-=======
-using DigitalArs.Application.Services; // Contratos e implementaciones de Application
-using Microsoft.Extensions.DependencyInjection; // IServiceCollection.AddScoped
-using DigitalArs.Application.Security;
->>>>>>> 9a6eacc93c41109c51c00bf4167e649005a98b31
 
 namespace DigitalArs.Application;
 
