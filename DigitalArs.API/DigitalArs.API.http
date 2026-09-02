@@ -53,3 +53,52 @@ Content-Type: application/json
 ### Baja lógica
 DELETE {{DigitalArs.API_HostAddress}}/api/users/2
 Authorization: Bearer {{token}}
+
+### Login Juan (copiar token a @token)
+POST {{DigitalArs.API_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "juan.perez@digitalars.com",
+  "password": "User123!"
+}
+
+### Transferir Juan (cuenta 2) → María (cuenta 3)
+POST {{DigitalArs.API_HostAddress}}/api/transactions/transfer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "destinationAccountId": 3,
+  "amount": 100
+}
+
+### Transferir saldo insuficiente
+POST {{DigitalArs.API_HostAddress}}/api/transactions/transfer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "destinationAccountId": 3,
+  "amount": 99999
+}
+
+### Autotransferencia (Juan → cuenta 2)
+POST {{DigitalArs.API_HostAddress}}/api/transactions/transfer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "destinationAccountId": 2,
+  "amount": 100
+}
+
+### Destino inexistente
+POST {{DigitalArs.API_HostAddress}}/api/transactions/transfer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "destinationAccountId": 999,
+  "amount": 100
+}

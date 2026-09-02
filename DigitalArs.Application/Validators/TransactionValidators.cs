@@ -19,3 +19,17 @@ public sealed class CreateTransactionDtoValidator : AbstractValidator<CreateTran
             .WithMessage("El monto admite como máximo 2 decimales.");
     }
 }
+
+public sealed class TransferDtoValidator : AbstractValidator<TransferDto>
+{
+    public TransferDtoValidator()
+    {
+        RuleFor(x => x.DestinationAccountId)
+            .GreaterThan(0).WithMessage("La cuenta destino es obligatoria.");
+
+        RuleFor(x => x.Amount)
+            .GreaterThan(0).WithMessage("El monto debe ser mayor a 0.")
+            .PrecisionScale(18, 2, ignoreTrailingZeros: true)
+            .WithMessage("El monto admite como máximo 2 decimales.");
+    }
+}
