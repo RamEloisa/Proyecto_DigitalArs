@@ -61,3 +61,15 @@ public sealed class UpdateUserDtoValidator : AbstractValidator<UpdateUserDto>
             .GreaterThan(0).WithMessage("El rol es obligatorio.");
     }
 }
+
+public sealed class UserQueryDtoValidator : AbstractValidator<UserQueryDto>
+{
+    public UserQueryDtoValidator()
+    {
+        RuleFor(x => x.Page)
+            .GreaterThan(0).WithMessage("La página debe ser mayor a 0.");
+
+        RuleFor(x => x.PageSize)
+            .InclusiveBetween(1, 100).WithMessage("El tamaño de página debe estar entre 1 y 100.");
+    }
+}

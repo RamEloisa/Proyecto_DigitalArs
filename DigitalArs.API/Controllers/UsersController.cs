@@ -1,5 +1,7 @@
 using DigitalArs.Application.DTOs;
+using DigitalArs.Application.Exceptions;
 using DigitalArs.Application.Services;
+using DigitalArs.API.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
@@ -8,7 +10,7 @@ namespace DigitalArs.API.Controllers;
 [ApiController]
 [Route("api/users")]
 [Tags("Users")]
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _users;
@@ -19,16 +21,23 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [EndpointSummary("Lista todos los usuarios (sin contraseña)")]
-    [ProducesResponseType(typeof(IReadOnlyList<UserDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
+    [EndpointSummary("Lista usuarios paginados con filtros (nombre, email, rol, activo)")]
+    [ProducesResponseType(typeof(PagedResultDto<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PagedResultDto<UserDto>>> GetAll(
+        [FromQuery] UserQueryDto query,
+        CancellationToken cancellationToken)
     {
-        return Ok(await _users.GetAllAsync(cancellationToken));
+        return Ok(await _users.GetPagedAsync(query, cancellationToken));
     }
 
     [HttpGet("{id:int}")]
     [EndpointSummary("Obtiene un usuario por id")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDto>> GetById(int id, CancellationToken cancellationToken)
     {
@@ -37,33 +46,67 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [EndpointSummary("Registra un usuario")]
+    [EndpointSummary("Crea un usuario y su cuenta en la misma transacción")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto, CancellationToken cancellationToken)
     {
-        var created = await _users.CreateAsync(dto, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _users.CreateAsync(dto, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (DuplicateEmailException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (InvalidRoleException)
+        {
+            return InvalidRole();
+        }
     }
 
     [HttpPut("{id:int}")]
     [EndpointSummary("Actualiza datos de un usuario (no cambia la contraseña)")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto, CancellationToken cancellationToken)
     {
-        var updated = await _users.UpdateAsync(id, dto, cancellationToken);
-        return updated ? NoContent() : NotFound();
+        try
+        {
+            var updated = await _users.UpdateAsync(id, dto, cancellationToken);
+            return updated ? NoContent() : NotFound();
+        }
+        catch (DuplicateEmailException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (InvalidRoleException)
+        {
+            return InvalidRole();
+        }
     }
 
     [HttpDelete("{id:int}")]
-    [EndpointSummary("Elimina un usuario")]
+    [EndpointSummary("Baja lógica de un usuario (IsActive = false)")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var deleted = await _users.DeleteAsync(id, cancellationToken);
         return deleted ? NoContent() : NotFound();
     }
+
+    private BadRequestObjectResult InvalidRole() =>
+        ValidationErrorResponseFactory.From(
+            [new ValidationErrorDto("RoleId", "El rol no existe.")]);
 }

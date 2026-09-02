@@ -14,6 +14,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,9 +46,11 @@ builder.Services.AddOpenApi(options =>
         document.Info.Version = "v1";
         document.Info.Description =
             "Billetera digital: roles, usuarios, cuentas y transacciones. " +
-            "Ver los endpoints en Swagger no requiere migraciones. Ejecutar Try it out contra SQL Server si requiere la base creada.";
+            "Ver los endpoints en Swagger no requiere migraciones. Ejecutar Try it out contra SQL Server si requiere la base creada. " +
+            "Login: POST /api/Auth/login, después Authorize con el JWT.";
         return Task.CompletedTask;
     });
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
 
 builder.Services.AddApplication();
@@ -66,6 +70,12 @@ var jwtSettings = builder.Configuration
     ?? throw new InvalidOperationException(
         "La configuración JWT no está disponible.");
 
+if (string.IsNullOrWhiteSpace(jwtSettings.Key) || jwtSettings.Key.Length < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key debe estar en appsettings.json (o User Secrets) y tener al menos 32 caracteres.");
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -80,8 +90,8 @@ builder.Services
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
 
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key) //key vacia
-            ),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings.Key)),
 
             ClockSkew = TimeSpan.Zero
         };
@@ -98,13 +108,14 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/openapi/v1.json", "DigitalArs API v1");
         options.DocumentTitle = "DigitalArs API";
         options.RoutePrefix = "swagger";
         options.EnableTryItOutByDefault();
+        options.EnablePersistAuthorization();
         options.DisplayRequestDuration();
         options.DocExpansion(DocExpansion.List);
     });
@@ -115,6 +126,34 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // Enlaza Roles/Users/Accounts/Transactions
+app.MapControllers(); // Enlaza Auth y Users
 
 app.Run();
+
+internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
+{
+    public Task TransformAsync(
+        OpenApiDocument document,
+        OpenApiDocumentTransformerContext context,
+        CancellationToken cancellationToken)
+    {
+        var bearerScheme = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "JWT de POST /api/Auth/login."
+        };
+
+        document.Components ??= new OpenApiComponents();
+        document.AddComponent("Bearer", bearerScheme);
+        document.Security ??= [];
+        document.Security.Add(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
+
+        return Task.CompletedTask;
+    }
+}

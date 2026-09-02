@@ -15,14 +15,16 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.Id, src => src.ID_User)
             .Map(dest => dest.FullName, src => src.Full_Name)
             .Map(dest => dest.Dni, src => src.DNI)
-            .Map(dest => dest.RoleId, src => src.ID_Role);
+            .Map(dest => dest.RoleId, src => src.ID_Role)
+            .Map(dest => dest.IsActive, src => src.IsActive);
 
         config.NewConfig<CreateUserDto, User>()
             .Map(dest => dest.Full_Name, src => src.FullName)
-            .Map(dest => dest.Password_Hasheada, src => src.Password)
             .Map(dest => dest.DNI, src => src.Dni)
             .Map(dest => dest.ID_Role, src => src.RoleId)
             .Ignore(dest => dest.ID_User)
+            .Ignore(dest => dest.Password_Hasheada)
+            .Ignore(dest => dest.IsActive)
             .Ignore(dest => dest.Role)
             .Ignore(dest => dest.Account);
 

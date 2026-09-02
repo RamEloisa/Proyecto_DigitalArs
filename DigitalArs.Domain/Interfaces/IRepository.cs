@@ -18,6 +18,13 @@ public interface IRepository<T> where T : class
         params Expression<Func<T, object>>[] includes
     );
 
+    // Página de resultados (Skip/Take) con total para armar el envelope.
+    Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        Expression<Func<T, bool>>? predicate = null,
+        CancellationToken cancellationToken = default);
+
     // Marca la entidad para insertarse (todavía no hay INSERT hasta SaveChangesAsync)
     Task AddAsync(T entity, CancellationToken cancellationToken = default);
 

@@ -42,6 +42,28 @@ internal class Repository<T> : IRepository<T> where T : class
         return await query.ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        Expression<Func<T, bool>>? predicate = null,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (predicate is not null)
+        {
+            query = query.Where(predicate);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     // AddAsync solo agrega al change tracker; no hace INSERT hasta SaveChangesAsync
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
     {

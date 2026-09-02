@@ -1,6 +1,55 @@
 @DigitalArs.API_HostAddress = http://localhost:5179
+@token = 
 
-GET {{DigitalArs.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Login admin (copiar token a @token)
+POST {{DigitalArs.API_HostAddress}}/api/Auth/login
+Content-Type: application/json
 
-###
+{
+  "email": "admin@digitalars.com",
+  "password": "Admin123!"
+}
+
+### Listar usuarios (paginado)
+GET {{DigitalArs.API_HostAddress}}/api/users?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### Listar usuarios con filtros
+GET {{DigitalArs.API_HostAddress}}/api/users?page=1&pageSize=10&name=Juan&email=juan&roleId=2&isActive=true
+Authorization: Bearer {{token}}
+
+### Detalle de usuario
+GET {{DigitalArs.API_HostAddress}}/api/users/1
+Authorization: Bearer {{token}}
+
+### Crear usuario + cuenta
+POST {{DigitalArs.API_HostAddress}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Nuevo Usuario",
+  "email": "nuevo.usuario@digitalars.com",
+  "password": "User123!",
+  "dni": "40111222",
+  "alias": "nuevo.usuario",
+  "roleId": 2
+}
+
+### Actualizar usuario
+PUT {{DigitalArs.API_HostAddress}}/api/users/2
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Juan Perez",
+  "email": "juan.perez@digitalars.com",
+  "dni": "35222333",
+  "alias": "juan.perez",
+  "roleId": 2,
+  "isActive": true
+}
+
+### Baja lógica
+DELETE {{DigitalArs.API_HostAddress}}/api/users/2
+Authorization: Bearer {{token}}
