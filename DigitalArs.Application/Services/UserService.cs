@@ -54,6 +54,7 @@ public class UserService : IUserService
     {
         await EnsureEmailIsUniqueAsync(dto.Email, excludeUserId: null, cancellationToken);
         await EnsureAliasIsUniqueAsync(dto.Alias, excludeUserId: null, cancellationToken);
+        await EnsureDniIsUniqueAsync(dto.Dni, excludeUserId: null, cancellationToken);
         await EnsureRoleExistsAsync(dto.RoleId, cancellationToken);
 
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -94,6 +95,7 @@ public class UserService : IUserService
 
         await EnsureEmailIsUniqueAsync(dto.Email, excludeUserId: id, cancellationToken);
         await EnsureAliasIsUniqueAsync(dto.Alias, excludeUserId: id, cancellationToken);
+        await EnsureDniIsUniqueAsync(dto.Dni, excludeUserId: id, cancellationToken);
         await EnsureRoleExistsAsync(dto.RoleId, cancellationToken);
 
         _mapper.Map<UpdateUserDto, User>(dto, user);
@@ -145,6 +147,21 @@ public class UserService : IUserService
         if (matches.Any(u => !excludeUserId.HasValue || u.ID_User != excludeUserId.Value))
         {
             throw new DuplicateAliasException();
+        }
+    }
+
+    private async Task EnsureDniIsUniqueAsync(
+        string dni,
+        int? excludeUserId,
+        CancellationToken cancellationToken)
+    {
+        var matches = await _unitOfWork.Repository<User>().FindAsync(
+            u => u.DNI == dni,
+            cancellationToken);
+
+        if (matches.Any(u => !excludeUserId.HasValue || u.ID_User != excludeUserId.Value))
+        {
+            throw new DuplicateDniException();
         }
     }
 

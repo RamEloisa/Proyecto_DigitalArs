@@ -67,6 +67,10 @@ public class UsersController : ControllerBase
         {
             return Conflict(new { message = ex.Message });
         }
+        catch (DuplicateDniException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
         catch (InvalidRoleException)
         {
             return InvalidRole();
@@ -93,6 +97,10 @@ public class UsersController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
         catch (DuplicateAliasException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (DuplicateDniException ex)
         {
             return Conflict(new { message = ex.Message });
         }

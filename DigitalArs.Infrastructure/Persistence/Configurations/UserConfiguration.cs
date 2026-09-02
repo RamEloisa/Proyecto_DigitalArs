@@ -33,6 +33,8 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
             builder.Property(u => u.DNI)
                 .IsRequired()
                 .HasMaxLength(20);
+            builder.HasIndex(u => u.DNI)
+                .IsUnique();
 
             builder.Property(u => u.Alias)
                 .IsRequired()
