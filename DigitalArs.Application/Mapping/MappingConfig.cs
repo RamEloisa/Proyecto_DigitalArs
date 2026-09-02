@@ -76,6 +76,15 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.Date_Transaction, _ => DateTime.UtcNow)
             .Ignore(dest => dest.ID_Transaction)
             .Ignore(dest => dest.Account);
+
+        config.NewConfig<UpdateMeDto, User>()
+            .Map(dest => dest.Full_Name, src => src.FullName)
+            .Map(dest => dest.DNI, src => src.Dni)
+            .Ignore(dest => dest.ID_User)
+            .Ignore(dest => dest.Password_Hasheada)
+            .Ignore(dest => dest.ID_Role)
+            .Ignore(dest => dest.Role)
+            .Ignore(dest => dest.Account);
     }
 
     private static void EnsureResponseDtosDoNotExposePassword()
