@@ -9,7 +9,6 @@ public record CreateUserDto(string FullName, string Email, string Password, stri
 /// Body de PUT /api/users/{id}. No permite cambiar la contraseña.
 public record UpdateUserDto(string FullName, string Email, string Dni, string Alias, int RoleId, bool IsActive);
 
-/// Query de GET /api/users: paginación y filtros opcionales.
 public sealed class UserQueryDto
 {
     public int Page { get; init; } = 1;
@@ -22,3 +21,4 @@ public sealed class UserQueryDto
 
 /// Envelope de listados paginados.
 public record PagedResultDto<T>(IReadOnlyList<T> Items, int TotalCount, int Page, int PageSize);
+public record UpdateMeDto(string FullName, string Email, string Dni, string Alias, string? CurrentPassword, string? NewPassword);
