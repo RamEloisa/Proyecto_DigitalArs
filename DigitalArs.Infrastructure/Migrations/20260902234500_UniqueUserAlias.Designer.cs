@@ -4,6 +4,7 @@ using DigitalArs.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DigitalArs.Infrastructure.Migrations
 {
     [DbContext(typeof(DigitalArsDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260902234500_UniqueUserAlias")]
+    partial class UniqueUserAlias
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,7 +231,7 @@ namespace DigitalArs.Infrastructure.Migrations
                             Full_Name = "Admin Principal",
                             ID_Role = 1,
                             IsActive = true,
-                            Password_Hasheada = "$2a$11$Lcc/.JSUqr0pWtLG9/SIwe0R3J7uk.QwAiJ0i4Vws3odRsPRa28uy"
+                            Password_Hasheada = "$2a$11$4UhybbztKrzx7HvDlvNVaurxyqU5U4hT5.kGJGXzWCtWnKQdTxyQS"
                         },
                         new
                         {
@@ -239,7 +242,7 @@ namespace DigitalArs.Infrastructure.Migrations
                             Full_Name = "Juan Perez",
                             ID_Role = 2,
                             IsActive = true,
-                            Password_Hasheada = "$2a$11$4/qtspjvQA4wq8df1/6oq..O.REndayYq/MGD5W8I0uQOtpO21icW"
+                            Password_Hasheada = "$2a$11$lYxAthsE/KgadR48MPwD7eQJ6o6qGitI5A9fCLXTUhKmimbT6G7Wa"
                         },
                         new
                         {
@@ -250,7 +253,7 @@ namespace DigitalArs.Infrastructure.Migrations
                             Full_Name = "Maria Gomez",
                             ID_Role = 2,
                             IsActive = true,
-                            Password_Hasheada = "$2a$11$4/qtspjvQA4wq8df1/6oq..O.REndayYq/MGD5W8I0uQOtpO21icW"
+                            Password_Hasheada = "$2a$11$lYxAthsE/KgadR48MPwD7eQJ6o6qGitI5A9fCLXTUhKmimbT6G7Wa"
                         });
                 });
 

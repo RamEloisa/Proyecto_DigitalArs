@@ -37,6 +37,8 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
             builder.Property(u => u.Alias)
                 .IsRequired()
                 .HasMaxLength(50);
+            builder.HasIndex(u => u.Alias)
+                .IsUnique();
 
             //Role 1:N User
             builder.HasOne(u => u.Role)

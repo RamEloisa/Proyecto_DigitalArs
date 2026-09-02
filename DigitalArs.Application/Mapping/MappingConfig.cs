@@ -16,7 +16,8 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.FullName, src => src.Full_Name)
             .Map(dest => dest.Dni, src => src.DNI)
             .Map(dest => dest.RoleId, src => src.ID_Role)
-            .Map(dest => dest.IsActive, src => src.IsActive);
+            .Map(dest => dest.IsActive, src => src.IsActive)
+            .Map(dest => dest.AccountId, src => src.Account != null ? src.Account.ID_Account : (int?)null);
 
         config.NewConfig<CreateUserDto, User>()
             .Map(dest => dest.Full_Name, src => src.FullName)

@@ -46,13 +46,19 @@ internal class Repository<T> : IRepository<T> where T : class
         int page,
         int pageSize,
         Expression<Func<T, bool>>? predicate = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = _dbSet.AsNoTracking();
 
         if (predicate is not null)
         {
             query = query.Where(predicate);
+        }
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
