@@ -63,6 +63,14 @@ public class UsersController : ControllerBase
         {
             return Conflict(new { message = ex.Message });
         }
+        catch (DuplicateAliasException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (DuplicateDniException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
         catch (InvalidRoleException)
         {
             return InvalidRole();
@@ -85,6 +93,14 @@ public class UsersController : ControllerBase
             return updated ? NoContent() : NotFound();
         }
         catch (DuplicateEmailException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (DuplicateAliasException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (DuplicateDniException ex)
         {
             return Conflict(new { message = ex.Message });
         }

@@ -23,7 +23,8 @@ public interface IRepository<T> where T : class
         int page,
         int pageSize,
         Expression<Func<T, bool>>? predicate = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[] includes);
 
     // Marca la entidad para insertarse (todavía no hay INSERT hasta SaveChangesAsync)
     Task AddAsync(T entity, CancellationToken cancellationToken = default);

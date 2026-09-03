@@ -36,7 +36,7 @@ public class UserService : IUserService
     {
         var predicate = BuildFilter(query);
         var (users, totalCount) = await _unitOfWork.Repository<User>()
-            .GetPagedAsync(query.Page, query.PageSize, predicate, cancellationToken);
+            .GetPagedAsync(query.Page, query.PageSize, predicate, cancellationToken, u => u.Account);
 
         var items = _mapper.Map<IReadOnlyList<User>, List<UserDto>>(users);
         return new PagedResultDto<UserDto>(items, totalCount, query.Page, query.PageSize);
@@ -44,13 +44,17 @@ public class UserService : IUserService
 
     public async Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Repository<User>().GetByIdAsync(id, cancellationToken);
+        var matches = await _unitOfWork.Repository<User>()
+            .FindAsync(u => u.ID_User == id, cancellationToken, u => u.Account);
+        var user = matches.FirstOrDefault();
         return user is null ? null : _mapper.Map<User, UserDto>(user);
     }
 
     public async Task<UserDto> CreateAsync(CreateUserDto dto, CancellationToken cancellationToken = default)
     {
         await EnsureEmailIsUniqueAsync(dto.Email, excludeUserId: null, cancellationToken);
+        await EnsureAliasIsUniqueAsync(dto.Alias, excludeUserId: null, cancellationToken);
+        await EnsureDniIsUniqueAsync(dto.Dni, excludeUserId: null, cancellationToken);
         await EnsureRoleExistsAsync(dto.RoleId, cancellationToken);
 
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -59,14 +63,21 @@ public class UserService : IUserService
             var user = _mapper.Map<CreateUserDto, User>(dto);
             user.IsActive = true;
             user.Password_Hasheada = _passwordHasher.Hash(dto.Password);
-            user.Account = new Account
-            {
-                Name = "Cuenta Principal",
-                Price = 0m,
-                Date = DateTime.UtcNow
-            };
 
             await _unitOfWork.Repository<User>().AddAsync(user, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var account = new Account
+            {
+                ID_User = user.ID_User,
+                Name = "Cuenta Principal",
+                Price = 0m,
+                Date = DateTime.UtcNow,
+                User = user
+            };
+            await _unitOfWork.Repository<Account>().AddAsync(account, cancellationToken);
+            user.Account = account;
+
             await _unitOfWork.CommitAsync(cancellationToken);
             return _mapper.Map<User, UserDto>(user);
         }
@@ -83,6 +94,8 @@ public class UserService : IUserService
         if (user is null) return false;
 
         await EnsureEmailIsUniqueAsync(dto.Email, excludeUserId: id, cancellationToken);
+        await EnsureAliasIsUniqueAsync(dto.Alias, excludeUserId: id, cancellationToken);
+        await EnsureDniIsUniqueAsync(dto.Dni, excludeUserId: id, cancellationToken);
         await EnsureRoleExistsAsync(dto.RoleId, cancellationToken);
 
         _mapper.Map<UpdateUserDto, User>(dto, user);
@@ -119,6 +132,36 @@ public class UserService : IUserService
         if (matches.Any(u => !excludeUserId.HasValue || u.ID_User != excludeUserId.Value))
         {
             throw new DuplicateEmailException();
+        }
+    }
+
+    private async Task EnsureAliasIsUniqueAsync(
+        string alias,
+        int? excludeUserId,
+        CancellationToken cancellationToken)
+    {
+        var matches = await _unitOfWork.Repository<User>().FindAsync(
+            u => u.Alias == alias,
+            cancellationToken);
+
+        if (matches.Any(u => !excludeUserId.HasValue || u.ID_User != excludeUserId.Value))
+        {
+            throw new DuplicateAliasException();
+        }
+    }
+
+    private async Task EnsureDniIsUniqueAsync(
+        string dni,
+        int? excludeUserId,
+        CancellationToken cancellationToken)
+    {
+        var matches = await _unitOfWork.Repository<User>().FindAsync(
+            u => u.DNI == dni,
+            cancellationToken);
+
+        if (matches.Any(u => !excludeUserId.HasValue || u.ID_User != excludeUserId.Value))
+        {
+            throw new DuplicateDniException();
         }
     }
 

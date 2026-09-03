@@ -16,7 +16,8 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.FullName, src => src.Full_Name)
             .Map(dest => dest.Dni, src => src.DNI)
             .Map(dest => dest.RoleId, src => src.ID_Role)
-            .Map(dest => dest.IsActive, src => src.IsActive);
+            .Map(dest => dest.IsActive, src => src.IsActive)
+            .Map(dest => dest.AccountId, src => src.Account != null ? src.Account.ID_Account : (int?)null);
 
         config.NewConfig<CreateUserDto, User>()
             .Map(dest => dest.Full_Name, src => src.FullName)
@@ -75,6 +76,15 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.ID_Account, src => src.AccountId)
             .Map(dest => dest.Date_Transaction, _ => DateTime.UtcNow)
             .Ignore(dest => dest.ID_Transaction)
+            .Ignore(dest => dest.Account);
+
+        config.NewConfig<UpdateMeDto, User>()
+            .Map(dest => dest.Full_Name, src => src.FullName)
+            .Map(dest => dest.DNI, src => src.Dni)
+            .Ignore(dest => dest.ID_User)
+            .Ignore(dest => dest.Password_Hasheada)
+            .Ignore(dest => dest.ID_Role)
+            .Ignore(dest => dest.Role)
             .Ignore(dest => dest.Account);
     }
 

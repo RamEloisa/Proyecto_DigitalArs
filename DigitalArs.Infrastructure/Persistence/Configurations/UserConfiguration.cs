@@ -33,10 +33,14 @@ namespace DigitalArs.Infrastructure.Persistence.Configurations
             builder.Property(u => u.DNI)
                 .IsRequired()
                 .HasMaxLength(20);
+            builder.HasIndex(u => u.DNI)
+                .IsUnique();
 
             builder.Property(u => u.Alias)
                 .IsRequired()
                 .HasMaxLength(50);
+            builder.HasIndex(u => u.Alias)
+                .IsUnique();
 
             //Role 1:N User
             builder.HasOne(u => u.Role)
