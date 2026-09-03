@@ -42,6 +42,19 @@ internal class Repository<T> : IRepository<T> where T : class
         return await query.ToListAsync(cancellationToken);
     }
 
+    public async Task<TResult?> FirstOrDefaultAsync<TResult>(
+        Expression<Func<T, bool>> predicate,
+        Expression<Func<T, TResult>> selector,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(predicate)
+            .Select(selector)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+    
+
     public async Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
         int page,
         int pageSize,

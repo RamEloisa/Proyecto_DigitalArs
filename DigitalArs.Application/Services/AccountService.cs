@@ -12,6 +12,8 @@ public interface IAccountService
     Task<AccountDto> CreateAsync(CreateAccountDto dto, CancellationToken cancellationToken = default);
     Task<bool> UpdateAsync(int id, UpdateAccountDto dto, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+    Task<AccountMeDto?> GetMeAsync(int userId, CancellationToken cancellationToken=default);
 }
 
 public class AccountService : IAccountService
@@ -65,4 +67,17 @@ public class AccountService : IAccountService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public async Task<AccountMeDto?> GetMeAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        return await _unitOfWork.Repository<Account>()
+            .FirstOrDefaultAsync(
+                a => a.ID_User == userId,
+                a => new AccountMeDto(
+                    a.ID_Account,
+                    a.Price,
+                    a.Date),
+                cancellationToken);
+    }
 }
+
