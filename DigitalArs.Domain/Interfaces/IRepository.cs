@@ -18,6 +18,13 @@ public interface IRepository<T> where T : class
         params Expression<Func<T, object>>[] includes
     );
 
+    //Consulta entidad aplicando filtro y proyectando el resultado
+    Task<TResult?> FirstOrDefaultAsync<TResult>(
+        Expression<Func<T, bool>> predicate,
+        Expression<Func<T, TResult>> selector,
+        CancellationToken cancellationToken = default
+    );
+    
     // Página de resultados (Skip/Take) con total para armar el envelope.
     Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
         int page,
