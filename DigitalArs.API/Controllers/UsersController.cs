@@ -1,7 +1,5 @@
 using DigitalArs.Application.DTOs;
-using DigitalArs.Application.Exceptions;
 using DigitalArs.Application.Services;
-using DigitalArs.API.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
@@ -43,12 +41,6 @@ public class UsersController : ControllerBase
         string alias,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(alias) || alias.Trim().Length > 50)
-        {
-            return ValidationErrorResponseFactory.From(
-                [new ValidationErrorDto("alias", "El alias es obligatorio y no puede superar los 50 caracteres.")]);
-        }
-
         var users = await _users.SearchByAliasAsync(alias, cancellationToken);
         return Ok(users);
     }
@@ -107,9 +99,4 @@ public class UsersController : ControllerBase
         var deleted = await _users.DeleteAsync(id, cancellationToken);
         return deleted ? NoContent() : NotFound();
     }
-
-    /*private BadRequestObjectResult InvalidRole() =>
-        ValidationErrorResponseFactory.From(
-            [new ValidationErrorDto("RoleId", "El rol no existe.")],
-            HttpContext.TraceIdentifier);*/
 }

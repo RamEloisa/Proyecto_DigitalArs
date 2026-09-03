@@ -55,6 +55,12 @@ public class UserService : IUserService
         string alias,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(alias) || alias.Trim().Length > 50)
+        {
+            throw new InvalidOperationException(
+                "El alias es obligatorio y no puede superar los 50 caracteres.");
+        }
+
         var prefix = alias.Trim().ToLower();
         var matches = await _unitOfWork.Repository<User>()
             .FindAsync(

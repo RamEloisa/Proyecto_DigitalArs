@@ -28,16 +28,9 @@ public class TransactionsController : ControllerBase
         [FromQuery] TransactionQueryDto query,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var userId = CurrentUserHelper.GetUserId(User);
-            var result = await _transactions.GetMinePagedAsync(userId, query, cancellationToken);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "El token no contiene un userId válido." });
-        }
+        var userId = CurrentUserHelper.GetUserId(User);
+        var result = await _transactions.GetMinePagedAsync(userId, query, cancellationToken);
+        return Ok(result);
     }
 
     [HttpPost("transfer")]
