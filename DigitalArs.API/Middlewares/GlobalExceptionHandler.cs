@@ -27,10 +27,10 @@ namespace DigitalArs.API.Middlewares
             {
                 UnauthorizedAppException or UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, exception.Message),
                 ForbiddenException => (StatusCodes.Status403Forbidden, exception.Message),
-                NotFoundException or KeyNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
+                NotFoundException or KeyNotFoundException or DestinationAccountNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
                 InvalidOperationException => (StatusCodes.Status400BadRequest, exception.Message),
                 DuplicateEmailException or DuplicateAliasException or DuplicateDniException => (StatusCodes.Status409Conflict, exception.Message),
-                InvalidRoleException => (StatusCodes.Status400BadRequest, exception.Message),
+                InvalidRoleException or SourceAccountNotFoundException or SelfTransferException or InsufficientBalanceException => (StatusCodes.Status400BadRequest, exception.Message),
                 _ => (StatusCodes.Status500InternalServerError, "Ocurrió un error interno.")
             };
 

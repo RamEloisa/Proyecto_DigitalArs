@@ -1,8 +1,6 @@
 using DigitalArs.Application.DTOs;
-using DigitalArs.Application.Exceptions;
 using DigitalArs.Application.Security;
 using DigitalArs.Application.Services;
-using DigitalArs.API.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,35 +29,8 @@ public class TransactionsController : ControllerBase
         [FromBody] TransferDto dto,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var sourceUserId = CurrentUserHelper.GetUserId(User);
-            var result = await _transactions.TransferAsync(sourceUserId, dto, cancellationToken);
-            return StatusCode(StatusCodes.Status201Created, result);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "El token no contiene un userId válido." });
-        }
-        catch (SourceAccountNotFoundException ex)
-        {
-            return ValidationError("Account", ex.Message);
-        }
-        catch (SelfTransferException ex)
-        {
-            return ValidationError("DestinationAccountId", ex.Message);
-        }
-        catch (InsufficientBalanceException)
-        {
-            return ValidationError("Amount", "Saldo insuficiente.");
-        }
-        catch (DestinationAccountNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
+        var sourceUserId = CurrentUserHelper.GetUserId(User);
+        var result = await _transactions.TransferAsync(sourceUserId, dto, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
-
-    private BadRequestObjectResult ValidationError(string field, string message) =>
-        ValidationErrorResponseFactory.From(
-            [new ValidationErrorDto(field, message)]);
 }
