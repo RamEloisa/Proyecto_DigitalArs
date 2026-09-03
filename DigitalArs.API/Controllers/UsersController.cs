@@ -54,27 +54,8 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto, CancellationToken cancellationToken)
     {
-        try
-        {
-            var created = await _users.CreateAsync(dto, cancellationToken);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-        }
-        catch (DuplicateEmailException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-        catch (DuplicateAliasException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-        catch (DuplicateDniException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-        catch (InvalidRoleException)
-        {
-            return InvalidRole();
-        }
+        var created = await _users.CreateAsync(dto, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
@@ -87,27 +68,8 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto, CancellationToken cancellationToken)
     {
-        try
-        {
-            var updated = await _users.UpdateAsync(id, dto, cancellationToken);
-            return updated ? NoContent() : NotFound();
-        }
-        catch (DuplicateEmailException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-        catch (DuplicateAliasException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-        catch (DuplicateDniException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-        catch (InvalidRoleException)
-        {
-            return InvalidRole();
-        }
+        var updated = await _users.UpdateAsync(id, dto, cancellationToken);
+        return updated ? NoContent() : NotFound();
     }
 
     [HttpDelete("{id:int}")]
@@ -122,7 +84,8 @@ public class UsersController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-    private BadRequestObjectResult InvalidRole() =>
+    /*private BadRequestObjectResult InvalidRole() =>
         ValidationErrorResponseFactory.From(
-            [new ValidationErrorDto("RoleId", "El rol no existe.")]);
+            [new ValidationErrorDto("RoleId", "El rol no existe.")],
+            HttpContext.TraceIdentifier);*/
 }

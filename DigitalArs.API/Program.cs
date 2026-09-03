@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using DigitalArs.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +36,7 @@ builder.Services.AddControllers(options =>
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
-            ValidationErrorResponseFactory.FromModelState(context.ModelState);
+            ValidationErrorResponseFactory.FromModelState(context.ModelState, context.HttpContext.TraceIdentifier);
     });
 
 builder.Services.AddOpenApi(options =>
@@ -104,6 +105,26 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+var corsOrigin = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>()
+    ?? throw new InvalidOperationException(
+    "Cors: AllowedOrigins no esta configurado");
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins(corsOrigin)
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -121,7 +142,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseExceptionHandler();
+
 app.UseHttpsRedirection();
+
+app.UseCors("FrontendPolicy"); //CORS: Permite que el frontend haga llamadas a la API
 
 app.UseAuthentication();
 app.UseAuthorization();
