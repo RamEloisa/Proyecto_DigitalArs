@@ -49,13 +49,13 @@ public class TransactionsController : ControllerBase
         {
             return ValidationError("DestinationAccountId", ex.Message);
         }
-        catch (InsufficientBalanceException ex)
+        catch (InsufficientBalanceException)
         {
-            return ValidationError("Amount", ex.Message);
+            return ValidationError("Amount", "Saldo insuficiente.");
         }
-        catch (DestinationAccountNotFoundException)
+        catch (DestinationAccountNotFoundException ex)
         {
-            return NotFound();
+            return NotFound(new { message = ex.Message });
         }
     }
 

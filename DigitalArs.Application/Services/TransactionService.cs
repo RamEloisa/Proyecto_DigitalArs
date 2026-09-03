@@ -69,8 +69,14 @@ public class TransactionService : ITransactionService
                 cancellationToken,
                 a => a.User);
             var destination = destinationMatches.FirstOrDefault();
+            if (destination is null)
+            {
+                throw new DestinationAccountNotFoundException();
+            }
 
-            if (destination is null || !destination.User.IsActive)
+            var owner = destination.User
+                ?? (await _unitOfWork.Repository<User>().GetByIdAsync(destination.ID_User, cancellationToken));
+            if (owner is null || !owner.IsActive)
             {
                 throw new DestinationAccountNotFoundException();
             }
@@ -117,8 +123,20 @@ public class TransactionService : ITransactionService
         }
         catch
         {
-            await _unitOfWork.RollbackAsync(cancellationToken);
+            await RollbackSafelyAsync(cancellationToken);
             throw;
+        }
+    }
+
+    private async Task RollbackSafelyAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _unitOfWork.RollbackAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            // El rollback no debe tapar la excepción de negocio (p. ej. saldo insuficiente → 400).
         }
     }
 
