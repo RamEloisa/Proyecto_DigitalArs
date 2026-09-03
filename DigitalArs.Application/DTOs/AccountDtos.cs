@@ -10,5 +10,8 @@ public record CreateAccountDto(int UserId, string Name, decimal Price);
 /// Body de PUT /api/accounts/{id}.
 public record UpdateAccountDto(string Name, decimal Price);
 
-/// GET /api/accounts/me
+/// GET /api/accounts/me HU-14
 public record AccountMeDto(int Id, decimal Price, DateTime Date);
+
+/// Body de POST /api/accounts/deposit. HU-15
+public record DepositDto(decimal Amount);
