@@ -7,19 +7,19 @@ using Microsoft.AspNetCore.Authorization;
 namespace DigitalArs.API.Controllers
 {
     [ApiController]
-    [Route("api/accounts/me")]
+    [Route("api/accounts")]
     [Tags("Accounts")]
-    [Authorize]
     public class AccountController : ControllerBase
     {
-        private readonly IAccountService _account;
+        private readonly IAccountService _accounts;
 
-        public AccountController(IAccountService account)
+        public AccountController(IAccountService accounts)
         {
-            _account = account;
+            _accounts = accounts;
         }
 
-        [HttpGet]
+        [HttpGet("me")]
+        [Authorize]
         [EndpointSummary("Obtiene la cuenta del usuario autenticado")]
         [ProducesResponseType(typeof(AccountMeDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -28,24 +28,42 @@ namespace DigitalArs.API.Controllers
         {
             var userId = GetUserIdFromToken();
 
-            var myAccount = await _account.GetMeAsync(userId, cancellationToken);
+            var myAccount = await _accounts.GetMeAsync(userId, cancellationToken);
 
             return myAccount is null ? NotFound() : Ok(myAccount);
 
         }
 
-        private int GetUserIdFromToken() 
+        [HttpPost("deposit")]
+        [Authorize]
+        [EndpointSummary("El usuario autenticado hace un deposito en su cuenta")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Deposit([FromBody] DepositDto dto, CancellationToken cancellationToken)
         {
-            var userIdClaim = User.FindFirst("userId");
+            var userId = GetUserIdFromToken();
 
-            if(string.IsNullOrEmpty(userIdClaim?.Value) || !int.TryParse(userIdClaim.Value, out var userId))
+            try
             {
-                throw new UnauthorizedAccessException("Token invalido: no es el id del usuario.");
-            }
+                await _accounts.DepositAsync(
+                    userId,
+                    dto,
+                    cancellationToken);
 
-            return userId;
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
-   
+        
         [HttpGet("{id:int}")]
         [Authorize(Roles = "Admin")]
         [EndpointSummary("Obtiene una cuenta por id")]
@@ -57,10 +75,22 @@ namespace DigitalArs.API.Controllers
             int id,
             CancellationToken cancellationToken)
         {
-            var account = await _account.GetByIdAsync(id, cancellationToken);
+            var account = await _accounts.GetByIdAsync(id, cancellationToken);
 
             return account is null ? NotFound() : Ok(account);
         }
-   
+
+        private int GetUserIdFromToken()
+        {
+            var userIdClaim = User.FindFirst("userId");
+
+            if (string.IsNullOrEmpty(userIdClaim?.Value) || !int.TryParse(userIdClaim.Value, out var userId))
+            {
+                throw new UnauthorizedAccessException("Token invalido: no es el id del usuario.");
+            }
+
+            return userId;
+        }
+
     }
 }

@@ -35,3 +35,15 @@ public sealed class UpdateAccountDtoValidator : AbstractValidator<UpdateAccountD
             .WithMessage("El saldo admite como máximo 2 decimales.");
     }
 }
+
+public sealed class DepositDtoValidator : AbstractValidator<DepositDto>
+{
+    public DepositDtoValidator()
+    {
+        RuleFor(x => x.Amount)
+            .GreaterThan(0)
+            .WithMessage("El monto debe ser mayor a 0.")
+            .PrecisionScale(18, 2, ignoreTrailingZeros: true)
+            .WithMessage("El monto admite como máximo 2 decimales.");
+    }
+}
