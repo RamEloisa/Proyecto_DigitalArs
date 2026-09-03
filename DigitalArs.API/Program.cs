@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using DigitalArs.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +36,7 @@ builder.Services.AddControllers(options =>
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
-            ValidationErrorResponseFactory.FromModelState(context.ModelState);
+            ValidationErrorResponseFactory.FromModelState(context.ModelState, context.HttpContext.TraceIdentifier);
     });
 
 builder.Services.AddOpenApi(options =>
@@ -104,6 +105,9 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -120,6 +124,8 @@ if (app.Environment.IsDevelopment())
         options.DocExpansion(DocExpansion.List);
     });
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
