@@ -1,7 +1,5 @@
 using DigitalArs.Application.DTOs;
-using DigitalArs.Application.Exceptions;
 using DigitalArs.Application.Services;
-using DigitalArs.API.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
@@ -10,7 +8,7 @@ namespace DigitalArs.API.Controllers;
 [ApiController]
 [Route("api/users")]
 [Tags("Users")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _users;
@@ -21,6 +19,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Lista usuarios paginados con filtros (nombre, email, rol, activo)")]
     [ProducesResponseType(typeof(PagedResultDto<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
@@ -33,7 +32,21 @@ public class UsersController : ControllerBase
         return Ok(await _users.GetPagedAsync(query, cancellationToken));
     }
 
+    [HttpGet("alias/{alias}")]
+    [EndpointSummary("Lista usuarios activos cuyo alias empieza con el texto indicado")]
+    [ProducesResponseType(typeof(IReadOnlyList<UserLookupDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<UserLookupDto>>> SearchByAlias(
+        string alias,
+        CancellationToken cancellationToken)
+    {
+        var users = await _users.SearchByAliasAsync(alias, cancellationToken);
+        return Ok(users);
+    }
+
     [HttpGet("{id:int}")]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Obtiene un usuario por id")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -46,6 +59,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Crea un usuario y su cuenta en la misma transacción")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
@@ -59,6 +73,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Actualiza datos de un usuario (no cambia la contraseña)")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
@@ -73,6 +88,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Baja lógica de un usuario (IsActive = false)")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -83,9 +99,4 @@ public class UsersController : ControllerBase
         var deleted = await _users.DeleteAsync(id, cancellationToken);
         return deleted ? NoContent() : NotFound();
     }
-
-    /*private BadRequestObjectResult InvalidRole() =>
-        ValidationErrorResponseFactory.From(
-            [new ValidationErrorDto("RoleId", "El rol no existe.")],
-            HttpContext.TraceIdentifier);*/
 }

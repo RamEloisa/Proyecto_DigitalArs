@@ -19,6 +19,12 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.IsActive, src => src.IsActive)
             .Map(dest => dest.AccountId, src => src.Account != null ? src.Account.ID_Account : (int?)null);
 
+        config.NewConfig<User, UserLookupDto>()
+            .Map(dest => dest.Id, src => src.ID_User)
+            .Map(dest => dest.FullName, src => src.Full_Name)
+            .Map(dest => dest.Alias, src => src.Alias)
+            .Map(dest => dest.AccountId, src => src.Account != null ? src.Account.ID_Account : (int?)null);
+
         config.NewConfig<CreateUserDto, User>()
             .Map(dest => dest.Full_Name, src => src.FullName)
             .Map(dest => dest.DNI, src => src.Dni)
@@ -90,7 +96,8 @@ public sealed class MappingConfig : IRegister
 
     private static void EnsureResponseDtosDoNotExposePassword()
     {
-        var leaked = typeof(UserDto).GetProperties()
+        var leaked = new[] { typeof(UserDto), typeof(UserLookupDto) }
+            .SelectMany(t => t.GetProperties())
             .Where(p => p.Name.Contains("Password", StringComparison.OrdinalIgnoreCase)
                         || p.Name.Contains("Hash", StringComparison.OrdinalIgnoreCase))
             .Select(p => p.Name)
@@ -99,7 +106,7 @@ public sealed class MappingConfig : IRegister
         if (leaked.Count > 0)
         {
             throw new InvalidOperationException(
-                "UserDto no debe exponer el hash de la contraseña: " + string.Join(", ", leaked));
+                "Los DTOs de usuario no deben exponer el hash de la contraseña: " + string.Join(", ", leaked));
         }
     }
 }

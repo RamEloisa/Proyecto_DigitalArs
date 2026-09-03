@@ -18,6 +18,13 @@ public interface IRepository<T> where T : class
         params Expression<Func<T, object>>[] includes
     );
 
+    //Consulta entidad aplicando filtro y proyectando el resultado
+    Task<TResult?> FirstOrDefaultAsync<TResult>(
+        Expression<Func<T, bool>> predicate,
+        Expression<Func<T, TResult>> selector,
+        CancellationToken cancellationToken = default
+    );
+    
     // Página de resultados (Skip/Take) con total para armar el envelope.
     Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
         int page,
@@ -25,6 +32,16 @@ public interface IRepository<T> where T : class
         Expression<Func<T, bool>>? predicate = null,
         CancellationToken cancellationToken = default,
         params Expression<Func<T, object>>[] includes);
+
+    // Página proyectada en SQL (Select) para evitar Include/N+1. Orden opcional.
+    Task<(IReadOnlyList<TResult> Items, int TotalCount)> GetPagedProjectedAsync<TResult, TOrderKey>(
+        int page,
+        int pageSize,
+        Expression<Func<T, TResult>> selector,
+        Expression<Func<T, bool>>? predicate = null,
+        Expression<Func<T, TOrderKey>>? orderBy = null,
+        bool descending = false,
+        CancellationToken cancellationToken = default);
 
     // Marca la entidad para insertarse (todavía no hay INSERT hasta SaveChangesAsync)
     Task AddAsync(T entity, CancellationToken cancellationToken = default);
