@@ -20,5 +20,24 @@ public sealed class UserQueryDto
 }
 
 /// Envelope de listados paginados.
-public record PagedResultDto<T>(IReadOnlyList<T> Items, int TotalCount, int Page, int PageSize);
+public record PagedResultDto<T>(
+    IReadOnlyList<T> Items,
+    int Page,
+    int PageSize,
+    int TotalItems,
+    int TotalPages)
+{
+    public static PagedResultDto<T> Create(
+        IReadOnlyList<T> items,
+        int page,
+        int pageSize,
+        int totalItems)
+    {
+        var totalPages = pageSize <= 0
+            ? 0
+            : (int)Math.Ceiling(totalItems / (double)pageSize);
+
+        return new PagedResultDto<T>(items, page, pageSize, totalItems, totalPages);
+    }
+}
 public record UpdateMeDto(string FullName, string Email, string Dni, string Alias, string? CurrentPassword, string? NewPassword);

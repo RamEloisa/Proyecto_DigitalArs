@@ -70,6 +70,41 @@ internal class Repository<T> : IRepository<T> where T : class
         return (items, totalCount);
     }
 
+    // Select se traduce a columnas SQL; Account.ID_User en el Where genera JOIN, sin N+1.
+    public async Task<(IReadOnlyList<TResult> Items, int TotalCount)> GetPagedProjectedAsync<TResult, TOrderKey>(
+        int page,
+        int pageSize,
+        Expression<Func<T, TResult>> selector,
+        Expression<Func<T, bool>>? predicate = null,
+        Expression<Func<T, TOrderKey>>? orderBy = null,
+        bool descending = false,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (predicate is not null)
+        {
+            query = query.Where(predicate);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        if (orderBy is not null)
+        {
+            query = descending
+                ? query.OrderByDescending(orderBy)
+                : query.OrderBy(orderBy);
+        }
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(selector)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     // AddAsync solo agrega al change tracker; no hace INSERT hasta SaveChangesAsync
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
     {

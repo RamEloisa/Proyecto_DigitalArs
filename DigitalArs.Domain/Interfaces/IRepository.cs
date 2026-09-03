@@ -26,6 +26,16 @@ public interface IRepository<T> where T : class
         CancellationToken cancellationToken = default,
         params Expression<Func<T, object>>[] includes);
 
+    // Página proyectada en SQL (Select) para evitar Include/N+1. Orden opcional.
+    Task<(IReadOnlyList<TResult> Items, int TotalCount)> GetPagedProjectedAsync<TResult, TOrderKey>(
+        int page,
+        int pageSize,
+        Expression<Func<T, TResult>> selector,
+        Expression<Func<T, bool>>? predicate = null,
+        Expression<Func<T, TOrderKey>>? orderBy = null,
+        bool descending = false,
+        CancellationToken cancellationToken = default);
+
     // Marca la entidad para insertarse (todavía no hay INSERT hasta SaveChangesAsync)
     Task AddAsync(T entity, CancellationToken cancellationToken = default);
 

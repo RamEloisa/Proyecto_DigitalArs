@@ -5,6 +5,18 @@ namespace DigitalArs.Application.DTOs;
 /// Respuesta de transacción.
 public record TransactionDto(int Id, int AccountId, TransactionType Type, decimal Amount, DateTime Date);
 
+/// Query de GET /api/transactions/me (paginación + filtros).
+public sealed class TransactionQueryDto
+{
+    public int Page { get; init; } = 1;
+    public int PageSize { get; init; } = 10;
+    public TransactionType? Type { get; init; }
+    public DateTime? FromDate { get; init; }
+    public DateTime? ToDate { get; init; }
+    public decimal? MinAmount { get; init; }
+    public decimal? MaxAmount { get; init; }
+}
+
 /// Body de POST /api/transactions.
 public record CreateTransactionDto(int AccountId, TransactionType Type, decimal Amount);
 

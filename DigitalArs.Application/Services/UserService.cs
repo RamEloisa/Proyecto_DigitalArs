@@ -39,7 +39,7 @@ public class UserService : IUserService
             .GetPagedAsync(query.Page, query.PageSize, predicate, cancellationToken, u => u.Account);
 
         var items = _mapper.Map<IReadOnlyList<User>, List<UserDto>>(users);
-        return new PagedResultDto<UserDto>(items, totalCount, query.Page, query.PageSize);
+        return PagedResultDto<UserDto>.Create(items, query.Page, query.PageSize, totalCount);
     }
 
     public async Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)

@@ -21,6 +21,27 @@ public class TransactionsController : ControllerBase
         _transactions = transactions;
     }
 
+    [HttpGet("me")]
+    [EndpointSummary("Historial de movimientos del usuario autenticado (paginado, ordenado por fecha desc)")]
+    [ProducesResponseType(typeof(PagedResultDto<TransactionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PagedResultDto<TransactionDto>>> GetMine(
+        [FromQuery] TransactionQueryDto query,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var userId = CurrentUserHelper.GetUserId(User);
+            var result = await _transactions.GetMinePagedAsync(userId, query, cancellationToken);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "El token no contiene un userId válido." });
+        }
+    }
+
     [HttpPost("transfer")]
     [EndpointSummary("Transfiere fondos a otra cuenta (débito origen + crédito destino, atómico)")]
     [ProducesResponseType(typeof(TransferResultDto), StatusCodes.Status201Created)]
