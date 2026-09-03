@@ -20,7 +20,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet("me")]
-    [EndpointSummary("Historial de movimientos del usuario autenticado (paginado, ordenado por fecha desc)")]
+    [EndpointSummary("Historial de movimientos del usuario autenticado: depósitos y transferencias (paginado, ordenado por fecha desc)")]
     [ProducesResponseType(typeof(PagedResultDto<TransactionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

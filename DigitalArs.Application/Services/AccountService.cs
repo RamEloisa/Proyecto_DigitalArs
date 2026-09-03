@@ -15,8 +15,8 @@ public interface IAccountService
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
     // HU 14
     Task<AccountMeDto?> GetMeAsync(int userId, CancellationToken cancellationToken=default);
-    // HU 15
-    Task DepositAsync(int userId, DepositDto dto, CancellationToken cancellationToken = default);
+    // HU 15 — acredita saldo y deja el depósito en el historial de movimientos
+    Task<TransactionDto> DepositAsync(int userId, DepositDto dto, CancellationToken cancellationToken = default);
 
 }
 
@@ -87,56 +87,67 @@ public class AccountService : IAccountService
                 cancellationToken);
     }
 
-    public async Task DepositAsync(int userId, DepositDto dto, CancellationToken cancellationToken = default)
+    public async Task<TransactionDto> DepositAsync(int userId, DepositDto dto, CancellationToken cancellationToken = default)
     {
         var accounts = await _unitOfWork
-        .Repository<Account>()
-        .FindAsync(
-            a => a.ID_User == userId,
-            cancellationToken);
-
-    var account = accounts.FirstOrDefault();
-
-    if (account is null)
-    {
-        throw new KeyNotFoundException(
-            $"Cuenta del usuario con ID {userId} no encontrada.");
-    }
-
-    if (dto.Amount > MaxDepositAmount)
-    {
-        throw new InvalidOperationException(
-            $"El monto máximo por depósito es de {MaxDepositAmount}.");
-    }
-
-    await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-    try
-    {
-        account.Price += dto.Amount;
-
-        var transaction = new Transaction
-        {
-            ID_Account = account.ID_Account,
-            Type = TransactionType.Deposit,
-            Amount = dto.Amount
-        };
-
-        await _unitOfWork
-            .Repository<Transaction>()
-            .AddAsync(transaction, cancellationToken);
-
-        _unitOfWork
             .Repository<Account>()
-            .Update(account);
+            .FindAsync(
+                a => a.ID_User == userId,
+                cancellationToken);
 
-        await _unitOfWork.CommitAsync(cancellationToken);
-    }
-    catch
-    {
-        await _unitOfWork.RollbackAsync(cancellationToken);
-        throw;
-    }
+        var account = accounts.FirstOrDefault();
+
+        if (account is null)
+        {
+            throw new KeyNotFoundException(
+                $"Cuenta del usuario con ID {userId} no encontrada.");
+        }
+
+        if (dto.Amount > MaxDepositAmount)
+        {
+            throw new InvalidOperationException(
+                $"El monto máximo por depósito es de {MaxDepositAmount}.");
+        }
+
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            account.Price += dto.Amount;
+
+            var transaction = new Transaction
+            {
+                ID_Account = account.ID_Account,
+                Type = TransactionType.Deposit,
+                Amount = dto.Amount,
+                Date_Transaction = DateTime.UtcNow
+            };
+
+            await _unitOfWork
+                .Repository<Transaction>()
+                .AddAsync(transaction, cancellationToken);
+
+            _unitOfWork
+                .Repository<Account>()
+                .Update(account);
+
+            await _unitOfWork.CommitAsync(cancellationToken);
+
+            return _mapper.Map<Transaction, TransactionDto>(transaction);
+        }
+        catch
+        {
+            try
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+            }
+            catch (Exception)
+            {
+                // El rollback no debe tapar la excepción de negocio.
+            }
+
+            throw;
+        }
     }
 }
 

@@ -36,23 +36,23 @@ namespace DigitalArs.API.Controllers
 
         [HttpPost("deposit")]
         [Authorize]
-        [EndpointSummary("El usuario autenticado hace un deposito en su cuenta")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [EndpointSummary("Deposita en la cuenta del usuario autenticado y lo registra en el historial de movimientos")]
+        [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Deposit([FromBody] DepositDto dto, CancellationToken cancellationToken)
+        public async Task<ActionResult<TransactionDto>> Deposit([FromBody] DepositDto dto, CancellationToken cancellationToken)
         {
             var userId = GetUserIdFromToken();
 
             try
             {
-                await _accounts.DepositAsync(
+                var result = await _accounts.DepositAsync(
                     userId,
                     dto,
                     cancellationToken);
 
-                return NoContent();
+                return StatusCode(StatusCodes.Status201Created, result);
             }
             catch (KeyNotFoundException ex)
             {
