@@ -28,34 +28,17 @@ namespace DigitalArs.API.Controllers
         public async Task<IActionResult> UpdateMe([FromBody] UpdateMeDto request)
         {
             var userId = GetUserIdFromToken();
-            try
-            {
-                await _userMeService.UpdateMeAsync(userId, request);
-                return NoContent();
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await _userMeService.UpdateMeAsync(userId, request);
+            return NoContent();
         }
 
-        private int GetUserIdFromToken() 
+        private int GetUserIdFromToken()
         {
             var userIdClaim = User.FindFirst("userId");
-
-            if(string.IsNullOrEmpty(userIdClaim?.Value) || !int.TryParse(userIdClaim.Value, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim?.Value) || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 throw new UnauthorizedAccessException("Token invalido: no es el id del usuario.");
             }
-
             return userId;
         }
     }

@@ -31,7 +31,7 @@ public sealed class FluentValidationActionFilter : IAsyncActionFilter
 
             if (!result.IsValid)
             {
-                context.Result = ValidationErrorResponseFactory.FromFluent(result);
+                context.Result = ValidationErrorResponseFactory.FromFluent(result, context.HttpContext.TraceIdentifier);
                 return;
             }
         }
@@ -42,10 +42,13 @@ public sealed class FluentValidationActionFilter : IAsyncActionFilter
 
 public static class ValidationErrorResponseFactory
 {
-    public static BadRequestObjectResult From(IReadOnlyList<ValidationErrorDto> errors) =>
-        new(new ValidationProblemDto(StatusCodes.Status400BadRequest, errors));
 
-    public static BadRequestObjectResult FromModelState(ModelStateDictionary modelState)
+    private const string DefaultMessage = "Uno o más campos no son válidos.";
+
+    public static BadRequestObjectResult From(IReadOnlyList<ValidationErrorDto> errors, string traceId) =>
+        new(new ValidationProblemDto(StatusCodes.Status400BadRequest, DefaultMessage, errors, traceId));
+
+    public static BadRequestObjectResult FromModelState(ModelStateDictionary modelState, string traceId)
     {
         var errors = modelState
             .Where(kvp => kvp.Value is { Errors.Count: > 0 })
@@ -57,9 +60,9 @@ public static class ValidationErrorResponseFactory
                         : error.ErrorMessage)))
             .ToList();
 
-        return From(errors);
+        return From(errors, traceId);
     }
 
-    public static BadRequestObjectResult FromFluent(ValidationResult result) =>
-        From(result.Errors.Select(e => new ValidationErrorDto(e.PropertyName, e.ErrorMessage)).ToList());
+    public static BadRequestObjectResult FromFluent(ValidationResult result, string traceId) =>
+        From(result.Errors.Select(e => new ValidationErrorDto(e.PropertyName, e.ErrorMessage)).ToList(), traceId);
 }
