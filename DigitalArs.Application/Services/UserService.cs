@@ -12,6 +12,7 @@ public interface IUserService
 {
     Task<PagedResultDto<UserDto>> GetPagedAsync(UserQueryDto query, CancellationToken cancellationToken = default);
     Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<UserLookupDto>> SearchByAliasAsync(string alias, CancellationToken cancellationToken = default);
     Task<UserDto> CreateAsync(CreateUserDto dto, CancellationToken cancellationToken = default);
     Task<bool> UpdateAsync(int id, UpdateUserDto dto, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
@@ -48,6 +49,24 @@ public class UserService : IUserService
             .FindAsync(u => u.ID_User == id, cancellationToken, u => u.Account);
         var user = matches.FirstOrDefault();
         return user is null ? null : _mapper.Map<User, UserDto>(user);
+    }
+
+    public async Task<IReadOnlyList<UserLookupDto>> SearchByAliasAsync(
+        string alias,
+        CancellationToken cancellationToken = default)
+    {
+        var prefix = alias.Trim().ToLower();
+        var matches = await _unitOfWork.Repository<User>()
+            .FindAsync(
+                u => u.IsActive && u.Alias.ToLower().StartsWith(prefix),
+                cancellationToken,
+                u => u.Account);
+
+        var ordered = matches
+            .OrderBy(u => u.Alias, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return _mapper.Map<IReadOnlyList<User>, List<UserLookupDto>>(ordered);
     }
 
     public async Task<UserDto> CreateAsync(CreateUserDto dto, CancellationToken cancellationToken = default)

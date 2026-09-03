@@ -3,6 +3,9 @@ namespace DigitalArs.Application.DTOs;
 /// Respuesta de usuario: nunca incluye Password_Hasheada.
 public record UserDto(int Id, string FullName, string Email, string Dni, string Alias, int RoleId, bool IsActive, int? AccountId);
 
+/// Resultado de búsqueda por alias: no expone email, DNI ni rol.
+public record UserLookupDto(int Id, string FullName, string Alias, int? AccountId);
+
 /// Body de POST /api/users. Password se persiste como hash, no se devuelve.
 public record CreateUserDto(string FullName, string Email, string Password, string Dni, string Alias, int RoleId);
 
