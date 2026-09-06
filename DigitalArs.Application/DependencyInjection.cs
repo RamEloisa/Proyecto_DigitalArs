@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IUserMeService, UserMeService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IFixedTermDepositService, FixedTermDepositService>();
         services.AddScoped<IAuthService, AuthService>();
         return services; // Permite encadenar AddInfrastructure en Program.cs
     }

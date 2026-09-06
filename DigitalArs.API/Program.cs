@@ -16,7 +16,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using DigitalArs.API.HostedServices;
 using DigitalArs.API.Middlewares;
+using DigitalArs.Application.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +66,11 @@ builder.Services.AddDbContext<DigitalArsDbContext>(options =>
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
+
+builder.Services.Configure<FixedTermDepositSettings>(
+    builder.Configuration.GetSection(FixedTermDepositSettings.SectionName));
+
+builder.Services.AddHostedService<FixedTermDepositSettlementService>();
 
 var jwtSettings = builder.Configuration
     .GetSection("Jwt")

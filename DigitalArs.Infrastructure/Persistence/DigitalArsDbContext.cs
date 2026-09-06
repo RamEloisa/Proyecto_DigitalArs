@@ -18,6 +18,7 @@ public class DigitalArsDbContext : DbContext // Hereda el contexto de EF Core
     public DbSet<Role> Roles { get; set; } // Tabla Roles
     public DbSet<Account> Accounts { get; set; } // Tabla Accounts
     public DbSet<Transaction> Transactions { get; set; } // Tabla Transactions
+    public DbSet<FixedTermDeposit> FixedTermDeposits { get; set; }
 
     // Fluent API: claves, índices y relaciones viven en Persistence/Configurations
     protected override void OnModelCreating(ModelBuilder modelBuilder)

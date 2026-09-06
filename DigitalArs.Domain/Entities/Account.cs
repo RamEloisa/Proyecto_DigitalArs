@@ -21,5 +21,6 @@ namespace DigitalArs.Domain.Entities
 
         // Transacciones? (hechas x el user o recibidas / historial?)
         public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public ICollection<FixedTermDeposit> FixedTermDeposits { get; set; } = new List<FixedTermDeposit>();
     }
 }

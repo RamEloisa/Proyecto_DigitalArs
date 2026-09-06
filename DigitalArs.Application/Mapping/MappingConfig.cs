@@ -64,14 +64,16 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.Date, _ => DateTime.UtcNow)
             .Ignore(dest => dest.ID_Account)
             .Ignore(dest => dest.User)
-            .Ignore(dest => dest.Transactions);
+            .Ignore(dest => dest.Transactions)
+            .Ignore(dest => dest.FixedTermDeposits);
 
         config.NewConfig<UpdateAccountDto, Account>()
             .Ignore(dest => dest.ID_Account)
             .Ignore(dest => dest.ID_User)
             .Ignore(dest => dest.Date)
             .Ignore(dest => dest.User)
-            .Ignore(dest => dest.Transactions);
+            .Ignore(dest => dest.Transactions)
+            .Ignore(dest => dest.FixedTermDeposits);
 
         config.NewConfig<Transaction, TransactionDto>()
             .Map(dest => dest.Id, src => src.ID_Transaction)
@@ -83,6 +85,11 @@ public sealed class MappingConfig : IRegister
             .Map(dest => dest.Date_Transaction, _ => DateTime.UtcNow)
             .Ignore(dest => dest.ID_Transaction)
             .Ignore(dest => dest.Account);
+
+        config.NewConfig<FixedTermDeposit, FixedTermDepositDto>()
+            .Map(dest => dest.Id, src => src.ID_FixedTermDeposit);
+
+        config.NewConfig<FixedTermDeposit, FixedTermDepositMeDto>();
 
         config.NewConfig<UpdateMeDto, User>()
             .Map(dest => dest.Full_Name, src => src.FullName)

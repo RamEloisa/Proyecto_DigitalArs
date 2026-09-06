@@ -10,6 +10,8 @@ public record TransactionDto(int Id, int AccountId, TransactionType Type, decima
         TransactionType.Deposit => "Depósito",
         TransactionType.Transfer_In => "Transferencia recibida",
         TransactionType.Transfer_Out => "Transferencia enviada",
+        TransactionType.FixedTerm_Out => "Plazo fijo constituido",
+        TransactionType.FixedTerm_In => "Plazo fijo acreditado",
         _ => Type.ToString()
     };
 }

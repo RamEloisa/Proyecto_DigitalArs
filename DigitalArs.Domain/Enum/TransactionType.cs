@@ -13,6 +13,8 @@ namespace DigitalArs.Domain.Enum
     {
         Deposit,
         Transfer_In,
-        Transfer_Out
+        Transfer_Out,
+        FixedTerm_Out,
+        FixedTerm_In
     }
 }
