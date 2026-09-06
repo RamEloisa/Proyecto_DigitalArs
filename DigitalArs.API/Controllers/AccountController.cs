@@ -18,6 +18,21 @@ namespace DigitalArs.API.Controllers
             _accounts = accounts;
         }
 
+        //GET para PanelAdmin
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [EndpointSummary("Obtiene todas las cuentas para administraciÃ³n")]
+        [ProducesResponseType(typeof(IReadOnlyList<AccountDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IReadOnlyList<AccountDto>>> GetAll(
+            CancellationToken cancellationToken)
+        {
+            var accounts = await _accounts.GetAllAsync(cancellationToken);
+
+            return Ok(accounts);
+        }
+
         [HttpGet("me")]
         [Authorize]
         [EndpointSummary("Obtiene la cuenta del usuario autenticado")]
