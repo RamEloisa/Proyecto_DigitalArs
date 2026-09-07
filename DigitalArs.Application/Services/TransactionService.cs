@@ -1,5 +1,7 @@
+using DigitalArs.Application.Abstractions;
 using DigitalArs.Application.DTOs;
 using DigitalArs.Application.Exceptions;
+using DigitalArs.Application.Realtime;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Enum;
 using DigitalArs.Domain.Interfaces;
@@ -25,11 +27,16 @@ public class TransactionService : ITransactionService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public TransactionService(IUnitOfWork unitOfWork, IMapper mapper)
+    public TransactionService(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IRealtimeNotifier realtimeNotifier)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<IReadOnlyList<TransactionDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -142,7 +149,29 @@ public class TransactionService : ITransactionService
             await transactions.AddAsync(transferOut, cancellationToken);
             await transactions.AddAsync(transferIn, cancellationToken);
 
+            var outgoingNotification = AccountNotificationFactory.Create(
+                source.ID_User,
+                TransactionType.Transfer_Out,
+                dto.Amount);
+            var incomingNotification = AccountNotificationFactory.Create(
+                destination.ID_User,
+                TransactionType.Transfer_In,
+                dto.Amount);
+
+            var notifications = _unitOfWork.Repository<Notification>();
+            await notifications.AddAsync(outgoingNotification, cancellationToken);
+            await notifications.AddAsync(incomingNotification, cancellationToken);
+
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            await _realtimeNotifier.NotifyUserAsync(
+                source.ID_User,
+                AccountNotificationFactory.ToEvent(outgoingNotification, source.Price),
+                cancellationToken);
+            await _realtimeNotifier.NotifyUserAsync(
+                destination.ID_User,
+                AccountNotificationFactory.ToEvent(incomingNotification, destination.Price),
+                cancellationToken);
 
             return new TransferResultDto(
                 _mapper.Map<Transaction, TransactionDto>(transferOut),

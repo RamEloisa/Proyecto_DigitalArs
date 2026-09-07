@@ -1,6 +1,8 @@
+using DigitalArs.Application.Abstractions;
 using DigitalArs.Application.DTOs;
 using DigitalArs.Application.Exceptions;
 using DigitalArs.Application.Options;
+using DigitalArs.Application.Realtime;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Enum;
 using DigitalArs.Domain.Interfaces;
@@ -30,15 +32,18 @@ public class FixedTermDepositService : IFixedTermDepositService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly FixedTermDepositSettings _settings;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public FixedTermDepositService(
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        IOptions<FixedTermDepositSettings> options)
+        IOptions<FixedTermDepositSettings> options,
+        IRealtimeNotifier realtimeNotifier)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _settings = options.Value;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<FixedTermDepositDto> CreateAsync(
@@ -92,7 +97,21 @@ public class FixedTermDepositService : IFixedTermDepositService
                 Date_Transaction = createdAt
             }, cancellationToken);
 
+            var notification = AccountNotificationFactory.Create(
+                userId,
+                TransactionType.FixedTerm_Out,
+                dto.Amount);
+
+            await _unitOfWork
+                .Repository<Notification>()
+                .AddAsync(notification, cancellationToken);
+
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            await _realtimeNotifier.NotifyUserAsync(
+                userId,
+                AccountNotificationFactory.ToEvent(notification, account.Price),
+                cancellationToken);
 
             return _mapper.Map<FixedTermDeposit, FixedTermDepositDto>(deposit);
         }
@@ -140,6 +159,9 @@ public class FixedTermDepositService : IFixedTermDepositService
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
+            var pendingEvents = new List<(Notification Notification, decimal Balance)>();
+            var notifications = _unitOfWork.Repository<Notification>();
+
             foreach (var deposit in matured)
             {
                 if (deposit.Status != FixedTermDepositStatus.Active)
@@ -165,9 +187,25 @@ public class FixedTermDepositService : IFixedTermDepositService
                     Amount = deposit.FinalAmount,
                     Date_Transaction = now
                 }, cancellationToken);
+
+                var notification = AccountNotificationFactory.Create(
+                    account.ID_User,
+                    TransactionType.FixedTerm_In,
+                    deposit.FinalAmount);
+
+                await notifications.AddAsync(notification, cancellationToken);
+                pendingEvents.Add((notification, account.Price));
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            foreach (var (notification, balance) in pendingEvents)
+            {
+                await _realtimeNotifier.NotifyUserAsync(
+                    notification.ID_User,
+                    AccountNotificationFactory.ToEvent(notification, balance),
+                    cancellationToken);
+            }
         }
         catch
         {

@@ -21,5 +21,7 @@ namespace DigitalArs.Domain.Entities
 
         //Relacion 1:1 con Account
         public Account Account { get; set; }
+
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }
