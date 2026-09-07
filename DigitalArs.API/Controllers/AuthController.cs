@@ -18,6 +18,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EndpointSummary("Inicia sesión con credenciales de usuario (email y contraseña) y devuelve un token JWT.")]
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponseDto>> Login(
         [FromBody] LoginRequestDto request)
