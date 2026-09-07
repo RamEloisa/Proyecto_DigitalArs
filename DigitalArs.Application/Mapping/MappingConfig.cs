@@ -33,7 +33,8 @@ public sealed class MappingConfig : IRegister
             .Ignore(dest => dest.Password_Hasheada)
             .Ignore(dest => dest.IsActive)
             .Ignore(dest => dest.Role)
-            .Ignore(dest => dest.Account);
+            .Ignore(dest => dest.Account)
+            .Ignore(dest => dest.Notifications);
 
         config.NewConfig<UpdateUserDto, User>()
             .Map(dest => dest.Full_Name, src => src.FullName)
@@ -42,7 +43,8 @@ public sealed class MappingConfig : IRegister
             .Ignore(dest => dest.ID_User)
             .Ignore(dest => dest.Password_Hasheada)
             .Ignore(dest => dest.Role)
-            .Ignore(dest => dest.Account);
+            .Ignore(dest => dest.Account)
+            .Ignore(dest => dest.Notifications);
 
         config.NewConfig<Role, RoleDto>()
             .Map(dest => dest.Id, src => src.ID_Role);
@@ -98,7 +100,11 @@ public sealed class MappingConfig : IRegister
             .Ignore(dest => dest.Password_Hasheada)
             .Ignore(dest => dest.ID_Role)
             .Ignore(dest => dest.Role)
-            .Ignore(dest => dest.Account);
+            .Ignore(dest => dest.Account)
+            .Ignore(dest => dest.Notifications);
+
+        config.NewConfig<Notification, NotificationDto>()
+            .Map(dest => dest.Id, src => src.ID_Notification);
     }
 
     private static void EnsureResponseDtosDoNotExposePassword()

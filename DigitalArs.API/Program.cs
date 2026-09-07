@@ -17,7 +17,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 using DigitalArs.API.HostedServices;
+using DigitalArs.API.Hubs;
 using DigitalArs.API.Middlewares;
+using DigitalArs.API.Realtime;
+using DigitalArs.Application.Abstractions;
 using DigitalArs.Application.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,6 +87,9 @@ if (string.IsNullOrWhiteSpace(jwtSettings.Key) || jwtSettings.Key.Length < 32)
         "Jwt:Key debe estar en appsettings.json (o User Secrets) y tener al menos 32 caracteres.");
 }
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IRealtimeNotifier, SignalRRealtimeNotifier>();
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -102,6 +108,23 @@ builder.Services
                 Encoding.UTF8.GetBytes(jwtSettings.Key)),
 
             ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken)
+                    && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -158,7 +181,8 @@ app.UseCors("FrontendPolicy"); //CORS: Permite que el frontend haga llamadas a l
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // Enlaza Auth y Users
+app.MapControllers();
+app.MapHub<AccountHub>("/hubs/account");
 
 app.Run();
 

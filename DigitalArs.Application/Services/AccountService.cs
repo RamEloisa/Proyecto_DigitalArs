@@ -1,4 +1,6 @@
+using DigitalArs.Application.Abstractions;
 using DigitalArs.Application.DTOs;
+using DigitalArs.Application.Realtime;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Interfaces;
 using MapsterMapper;
@@ -24,14 +26,19 @@ public class AccountService : IAccountService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     //deposito maximo permitido
     private const decimal MaxDepositAmount = 1000000m;
 
-    public AccountService(IUnitOfWork unitOfWork, IMapper mapper)
+    public AccountService(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IRealtimeNotifier realtimeNotifier)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<IReadOnlyList<AccountDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -131,7 +138,21 @@ public class AccountService : IAccountService
                 .Repository<Account>()
                 .Update(account);
 
+            var notification = AccountNotificationFactory.Create(
+                userId,
+                TransactionType.Deposit,
+                dto.Amount);
+
+            await _unitOfWork
+                .Repository<Notification>()
+                .AddAsync(notification, cancellationToken);
+
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            await _realtimeNotifier.NotifyUserAsync(
+                userId,
+                AccountNotificationFactory.ToEvent(notification, account.Price),
+                cancellationToken);
 
             return _mapper.Map<Transaction, TransactionDto>(transaction);
         }
