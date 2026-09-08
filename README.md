@@ -57,6 +57,44 @@ dotnet ef database update --project DigitalArs.Infrastructure --startup-project 
 
 En el archivo `appsettings.json` se encuentra la configuración del servidor
 
+## Documentación de la API
+
+La API cuenta con documentación OpenAPI/Swagger y una colección de Postman para facilitar la exploración y prueba de los endpoints.
+
+### Swagger
+
+Documentación interactiva con api en ejecución en:
+
+`http://localhost:5179/swagger/index.html`
+
+El documento OpenAPI se encuentra en:
+
+`docs/openapi.json`
+
+### Postman
+
+La colección de Postman se encuentra en:
+
+`docs/postman/DigitalArs.postman_collection.json`
+
+La colección se genera a partir del documento OpenAPI mediante el script:
+
+`docs/generate-postman.js`
+
+Para regenerar la colección luego de realizar cambios en los endpoints, ejecutar desde la raíz del proyecto:
+
+`node docs/generate-postman.js`
+
+La colección generada puede importarse posteriormente en Postman para realizar pruebas de los endpoints.
+
+Para utilizarla:
+
+1. Ejecutar la API.
+2. Importar `DigitalArs.postman_collection.json` en Postman.
+3. Configurar `baseUrl` con la URL donde se ejecuta la API.
+4. Ejecutar `Auth > Login`.
+5. El token JWT obtenido se guarda automáticamente en la variable `token`.
+6. Los demás endpoints utilizan automáticamente ese token para autenticarse.
 
 ## Tests unitarios
 
