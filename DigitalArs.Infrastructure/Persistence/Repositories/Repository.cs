@@ -1,0 +1,138 @@
+using System.Linq.Expressions; 
+using DigitalArs.Domain.Interfaces; 
+using Microsoft.EntityFrameworkCore; 
+
+namespace DigitalArs.Infrastructure.Persistence.Repositories; 
+
+internal class Repository<T> : IRepository<T> where T : class 
+{
+    private readonly DbSet<T> _dbSet; 
+
+    // El contexto lo inyecta el UnitOfWork (mismo Scoped por request HTTP)
+    public Repository(DigitalArsDbContext context)
+    {
+        _dbSet = context.Set<T>(); 
+    }
+
+    // FindAsync de EF busca por clave primaria y usa el cache del change tracker
+    public async Task<T?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet.FindAsync(new object[] { id }, cancellationToken); 
+    }
+
+    // AsNoTracking: lectura, no hace falta rastrear cambios para un UPDATE posterior
+    public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet.AsNoTracking().ToListAsync(cancellationToken); 
+    }
+
+    // Where(predicate) se traduce a SQL (WHERE ...); queda tracked por si después se hace Update
+    public async Task<IReadOnlyList<T>> FindAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _dbSet.Where(predicate);
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<TResult?> FirstOrDefaultAsync<TResult>(
+        Expression<Func<T, bool>> predicate,
+        Expression<Func<T, TResult>> selector,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(predicate)
+            .Select(selector)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+    
+
+    public async Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        Expression<Func<T, bool>>? predicate = null,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (predicate is not null)
+        {
+            query = query.Where(predicate);
+        }
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+    // Select se traduce a columnas SQL; Account.ID_User en el Where genera JOIN, sin N+1.
+    public async Task<(IReadOnlyList<TResult> Items, int TotalCount)> GetPagedProjectedAsync<TResult, TOrderKey>(
+        int page,
+        int pageSize,
+        Expression<Func<T, TResult>> selector,
+        Expression<Func<T, bool>>? predicate = null,
+        Expression<Func<T, TOrderKey>>? orderBy = null,
+        bool descending = false,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (predicate is not null)
+        {
+            query = query.Where(predicate);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        if (orderBy is not null)
+        {
+            query = descending
+                ? query.OrderByDescending(orderBy)
+                : query.OrderBy(orderBy);
+        }
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(selector)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+    // AddAsync solo agrega al change tracker; no hace INSERT hasta SaveChangesAsync
+    public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
+    {
+        await _dbSet.AddAsync(entity, cancellationToken); 
+    }
+
+    // Update marca la entidad como Modified (UPDATE al guardar)
+    public void Update(T entity)
+    {
+        _dbSet.Update(entity); 
+    }
+
+    // Remove marca la entidad como Deleted (DELETE al guardar)
+    public void Delete(T entity)
+    {
+        _dbSet.Remove(entity); 
+    }
+}
