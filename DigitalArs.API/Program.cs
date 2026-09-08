@@ -50,9 +50,27 @@ builder.Services.AddOpenApi(options =>
         document.Info.Title = "DigitalArs API";
         document.Info.Version = "v1";
         document.Info.Description =
-            "Billetera digital: roles, usuarios, cuentas y transacciones. " +
-            "Ver los endpoints en Swagger no requiere migraciones. Ejecutar Try it out contra SQL Server si requiere la base creada. " +
-            "Login: POST /api/Auth/login, después Authorize con el JWT.";
+            """
+            ## DigitalArs API
+
+            API REST para una billetera digital.
+
+            **Funcionalidades principales:**
+            - Gestión de usuarios y roles.
+            - Gestión de cuentas y saldos.
+            - Depósitos y transferencias.
+            - Depósitos a plazo fijo.
+            - Notificaciones en tiempo real.
+
+            **Autenticación:**
+            1. Ejecutar `POST /api/Auth/login`.
+            2. Copiar el JWT obtenido.
+            3. Utilizar el botón **Authorize** para autenticarse.
+
+            > Swagger puede utilizarse para consultar los endpoints sin necesidad de ejecutar migraciones.
+            > Para probar endpoints que interactúan con la base de datos, SQL Server debe estar disponible y correctamente configurado.
+            """;
+            
         return Task.CompletedTask;
     });
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
@@ -83,7 +101,7 @@ var jwtSettings = builder.Configuration
 if (string.IsNullOrWhiteSpace(jwtSettings.Key) || jwtSettings.Key.Length < 32)
 {
     throw new InvalidOperationException(
-        "Jwt:Key debe estar en appsettings.json (o User Secrets) y tener al menos 32 caracteres.");
+        "Jwt:Key debe estar configurado y tener al menos 32 caracteres.");
 }
 
 builder.Services.AddSignalR();
