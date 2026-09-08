@@ -125,6 +125,9 @@ La URL del backend se configura mediante la variable `VITE_API_URL` en el archiv
 
 El puerto mostrado es únicamente un ejemplo y puede variar según la configuración local de cada desarrollador.
 
+Link al repositorio del Frontend:
+
+[Repositorio Frontend](https://github.com/emanuelPinedo/DigitalArs-Front.git)
 
 ## Credenciales de prueba
 
@@ -147,7 +150,7 @@ Estas credenciales son **solo para desarrollo/testing**, nunca usar en producci�
 
 El modelo completo y sus relaciones se encuentran representados en el siguiente diagrama entidad-relación:
 
-![Diagrama Entidad-Relación](docs/ER-Diagram.png)
+![Diagrama Entidad-Relación](docs/DigitalArs.diagram.png)
 
 ## Manejo de errores
 
