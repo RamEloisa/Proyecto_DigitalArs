@@ -56,3 +56,24 @@ dotnet ef database update --project DigitalArs.Infrastructure --startup-project 
 ## Configuración de conexión local
 
 En el archivo `appsettings.json` se encuentra la configuración del servidor
+
+
+## Tests unitarios
+
+El proyecto incluye un proyecto independiente `DigitalArs.Tests`, desarrollado con **xUnit** y **Moq**, para validar la lógica de negocio de los servicios de aplicación.
+
+Se cubren **10 casos de prueba**:
+
+* **Login:** credenciales válidas, contraseña incorrecta y usuario inactivo.
+* **Depósitos:** monto válido y monto superior al límite permitido.
+* **Transferencias:** transferencia válida, saldo insuficiente, destino inexistente, transferencia a la propia cuenta y rollback ante errores.
+
+Los tests utilizan mocks para aislar repositorios, `UnitOfWork` y servicios externos. También verifican el envío de notificaciones en tiempo real en las operaciones exitosas, sin depender de una base de datos real.
+
+### Ejecución
+
+```bash
+dotnet test DigitalArs.Tests
+```
+
+**Resultado actual: 10/10 tests aprobados.**

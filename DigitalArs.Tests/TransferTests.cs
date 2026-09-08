@@ -1,8 +1,3 @@
-//transferencia exitosa
-//saldo insuficiente
-//destino inexistente
-//autotransferencia
-//rollback
 using MapsterMapper;
 using Moq;
 using Xunit;
@@ -14,6 +9,7 @@ using DigitalArs.Domain.Interfaces;
 using DigitalArs.Application.Services;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Enum;
+using DigitalArs.Application.Abstractions;
 
 namespace DigitalArs.Tests.Transfers;
 
@@ -24,7 +20,8 @@ public class TransferTests
     private readonly Mock<IRepository<Transaction>> _transactionRepositoryMock;
     private readonly Mock<IRepository<User>> _userRepositoryMock;
     private readonly Mock<IMapper> _mapperMock;
-
+    private readonly Mock<IRealtimeNotifier> _realtimeNotifierMock;
+    private readonly Mock<IRepository<Notification>> _notificationRepositoryMock;
     private readonly TransactionService _transactionService;
 
     public TransferTests()
@@ -34,6 +31,8 @@ public class TransferTests
         _transactionRepositoryMock = new Mock<IRepository<Transaction>>();
         _userRepositoryMock = new Mock<IRepository<User>>();
         _mapperMock = new Mock<IMapper>();
+        _realtimeNotifierMock = new Mock<IRealtimeNotifier>();
+        _notificationRepositoryMock = new Mock<IRepository<Notification>>();
 
         _unitOfWorkMock
             .Setup(u => u.Repository<Account>())
@@ -47,9 +46,14 @@ public class TransferTests
             .Setup(u => u.Repository<User>())
             .Returns(_userRepositoryMock.Object);
 
+        _unitOfWorkMock
+            .Setup(u => u.Repository<Notification>())
+            .Returns(_notificationRepositoryMock.Object);
+
         _transactionService = new TransactionService(
             _unitOfWorkMock.Object,
-            _mapperMock.Object);
+            _mapperMock.Object,
+            _realtimeNotifierMock.Object);
     }
 
     [Fact]
@@ -162,6 +166,20 @@ public class TransferTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
+        _realtimeNotifierMock.Verify(
+            n => n.NotifyUserAsync(
+                source.ID_User,
+                It.IsAny<AccountRealtimeEvent>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        _realtimeNotifierMock.Verify(
+            n => n.NotifyUserAsync(
+                destination.ID_User,
+                It.IsAny<AccountRealtimeEvent>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        
         _unitOfWorkMock.Verify(
             u => u.RollbackAsync(
                 It.IsAny<CancellationToken>()),

@@ -1,6 +1,3 @@
-// deposito invalido
-// deposito valido
-
 using MapsterMapper;
 using Moq;
 using Xunit;
@@ -10,6 +7,7 @@ using DigitalArs.Domain.Interfaces;
 using DigitalArs.Application.Services;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Enum;
+using DigitalArs.Application.Abstractions;
 
 namespace DigitalArs.Tests.Deposits;
 
@@ -19,7 +17,8 @@ public class DepositTests
     private readonly Mock<IRepository<Account>> _accountRepositoryMock;
     private readonly Mock<IRepository<Transaction>> _transactionRepositoryMock;
     private readonly Mock<IMapper> _mapperMock;
-
+    private readonly Mock<IRealtimeNotifier> _realtimeNotifierMock;
+    private readonly Mock<IRepository<Notification>> _notificationRepositoryMock;
     private readonly AccountService _accountService;
 
     public DepositTests()
@@ -28,6 +27,8 @@ public class DepositTests
         _accountRepositoryMock = new Mock<IRepository<Account>>();
         _transactionRepositoryMock = new Mock<IRepository<Transaction>>();
         _mapperMock = new Mock<IMapper>();
+        _realtimeNotifierMock = new Mock<IRealtimeNotifier>();
+        _notificationRepositoryMock = new Mock<IRepository<Notification>>();
 
         _unitOfWorkMock
             .Setup(u => u.Repository<Account>())
@@ -37,9 +38,14 @@ public class DepositTests
             .Setup(u => u.Repository<Transaction>())
             .Returns(_transactionRepositoryMock.Object);
 
+        _unitOfWorkMock
+            .Setup(u => u.Repository<Notification>())
+            .Returns(_notificationRepositoryMock.Object);
+
         _accountService = new AccountService(
             _unitOfWorkMock.Object,
-            _mapperMock.Object);
+            _mapperMock.Object,
+            _realtimeNotifierMock.Object);
     }
 
     [Fact]
@@ -80,9 +86,9 @@ public class DepositTests
         Assert.NotNull(result);
         Assert.Equal(TransactionType.Deposit, result.Type);
         Assert.Equal(1000, result.Amount);
-
         Assert.Equal(6000, account.Price);
 
+        //verifica que se haya registrado la transaccion
         _transactionRepositoryMock.Verify(
             r => r.AddAsync(
                 It.Is<Transaction>(t =>
@@ -91,20 +97,28 @@ public class DepositTests
                     t.Amount == 1000),
                 It.IsAny<CancellationToken>()),
             Times.Once);
-
+        //verifica que se haya actualizado la cuenta
         _accountRepositoryMock.Verify(
             r => r.Update(account),
             Times.Once);
-
+        //verifica que se haya iniciado la transaccion
         _unitOfWorkMock.Verify(
             u => u.BeginTransactionAsync(
                 It.IsAny<CancellationToken>()),
             Times.Once);
-
+        //verifica el commit de la transaccion
         _unitOfWorkMock.Verify(
             u => u.CommitAsync(
                 It.IsAny<CancellationToken>()),
             Times.Once);
+        //verifica notificacion a usuario
+        _realtimeNotifierMock.Verify(
+            n => n.NotifyUserAsync(
+                account.ID_User,
+                It.IsAny<AccountRealtimeEvent>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
     }
 
     [Fact]
@@ -143,6 +157,12 @@ public class DepositTests
                 It.IsAny<CancellationToken>()),
             Times.Never);
 
+        _notificationRepositoryMock.Verify(
+            r => r.AddAsync(
+                It.IsAny<Notification>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+        
         _accountRepositoryMock.Verify(
             r => r.Update(It.IsAny<Account>()),
             Times.Never);
