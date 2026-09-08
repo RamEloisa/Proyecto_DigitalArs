@@ -125,9 +125,7 @@ La URL del backend se configura mediante la variable `VITE_API_URL` en el archiv
 
 El puerto mostrado es únicamente un ejemplo y puede variar según la configuración local de cada desarrollador.
 
-Link al repositorio del Frontend:
-
-[Repositorio Frontend](https://github.com/emanuelPinedo/DigitalArs-Front.git)
+Link al [Repositorio Frontend](https://github.com/emanuelPinedo/DigitalArs-Front.git)
 
 ## Credenciales de prueba
 
