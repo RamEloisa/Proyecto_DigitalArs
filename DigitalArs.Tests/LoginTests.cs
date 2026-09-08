@@ -5,7 +5,7 @@ using Xunit;
 using DigitalArs.Application.Security;
 using DigitalArs.Domain.Interfaces;
 using DigitalArs.Domain.Entities;
-using DigitalArs.Application.DTOs.Auth;
+using DigitalArs.Application.DTOs;
 
 namespace DigitalArs.Tests;
 

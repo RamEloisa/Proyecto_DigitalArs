@@ -1,4 +1,4 @@
-using DigitalArs.Application.DTOs.Auth;
+using DigitalArs.Application.DTOs;
 using DigitalArs.Domain.Entities;
 using DigitalArs.Domain.Interfaces;
 using Microsoft.Extensions.Options;

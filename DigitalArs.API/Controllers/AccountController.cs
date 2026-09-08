@@ -21,7 +21,7 @@ namespace DigitalArs.API.Controllers
         //GET para PanelAdmin
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        [EndpointSummary("Obtiene todas las cuentas para administraciÃ³n")]
+        [EndpointSummary("Obtiene todas las cuentas para administracion")]
         [ProducesResponseType(typeof(IReadOnlyList<AccountDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -39,7 +39,7 @@ namespace DigitalArs.API.Controllers
         [ProducesResponseType(typeof(AccountMeDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AccountDto>> GetMeAccount(CancellationToken cancellationToken)
+        public async Task<ActionResult<AccountMeDto>> GetMeAccount(CancellationToken cancellationToken)
         {
             var userId = GetUserIdFromToken();
 

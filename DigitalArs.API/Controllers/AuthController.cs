@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using DigitalArs.Application.DTOs.Auth;
 using DigitalArs.Application.Security;
 using Microsoft.AspNetCore.Authorization;
-
 namespace DigitalArs.API.Controllers;
+using DigitalArs.Application.DTOs;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -20,7 +19,10 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     [EndpointSummary("Inicia sesión con credenciales de usuario (email y contraseña) y devuelve un token JWT.")]
     [AllowAnonymous]
-    public async Task<ActionResult<LoginResponseDto>> Login(
+    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<LoginResponseDto>> Login(
         [FromBody] LoginRequestDto request)
     {
         try

@@ -1,4 +1,4 @@
-using DigitalArs.Application.DTOs.Auth;
+using DigitalArs.Application.DTOs;
 
 namespace DigitalArs.Application.Security;
 

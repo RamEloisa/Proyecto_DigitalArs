@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using BCrypt.Net;
 
-//Authetication
 using DigitalArs.Application.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
