@@ -145,6 +145,8 @@ Estas credenciales son **solo para desarrollo/testing**, nunca usar en producci�
 - `Role` 1:N `User` — un rol puede tener varios usuarios.
 - `User` 1:1 `Account` — cada usuario tiene una única cuenta.
 - `Account` 1:N `Transaction` — una cuenta puede registrar muchos movimientos.
+- `Account` 1:N `FixedTermDeposit` — una cuenta puede tener muchos depósitos a plazo fijo.
+- `User` 1:N `Notification` — un usuario puede recibir muchas notificaciones.
 
 El modelo completo y sus relaciones se encuentran representados en el siguiente diagrama entidad-relación:
 
