@@ -175,7 +175,7 @@ El proyecto evita almacenar credenciales, claves privadas y otros datos sensible
 
 ### Backend
 
-La consifuración general de la aplicación se encuentra en:
+La configuración general de la aplicación se encuentra en:
 
 `DigitalArs.API/appsettings.json`
 
